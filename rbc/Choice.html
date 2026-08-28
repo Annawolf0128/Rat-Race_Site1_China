@@ -1,0 +1,171 @@
+{{ block title }}第 {{ round_number }} 轮，共 {{ num_rounds }} 轮 — 你的选择{{ endblock }}
+
+{{ block content }}
+<style>
+  .rbc-choice-value {
+    font-size: 64px;
+    font-weight: 800;
+    text-align: center;
+    color: #1a1a2e;
+    margin: 16px 0;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .rbc-choice-value.rbc-placeholder {
+    font-size: 30px;
+    color: #6c757d;
+    font-weight: 600;
+  }
+  .rbc-choice-label {
+    text-align: center;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+  }
+  .rbc-slider-container { padding: 0 4px; margin-top: 8px; }
+  input[type="range"].rbc-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: #111;
+    outline: none;
+    margin: 12px 0;
+  }
+  input[type="range"].rbc-slider.rbc-slider-untouched::-webkit-slider-thumb {
+    opacity: 0;
+  }
+  input[type="range"].rbc-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #111;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  input[type="range"].rbc-slider.rbc-slider-untouched::-moz-range-thumb {
+    opacity: 0;
+  }
+  input[type="range"].rbc-slider::-moz-range-thumb {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #111;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  .rbc-slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #888;
+  }
+  .rbc-cost-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 15px;
+  }
+  .rbc-cost-row:last-child { border-bottom: none; }
+  .rbc-penalty-row { color: #111; }
+</style>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="rbc-choice-label">你的选择</div>
+    <div class="rbc-choice-value rbc-placeholder" id="rbc-choice-display">点击或拖动滑块进行选择</div>
+    <div class="rbc-slider-container">
+      <input type="hidden" id="id_x_choice" name="x_choice" value="">
+      <input
+        type="range"
+        class="rbc-slider rbc-slider-untouched"
+        id="rbc-choice-slider"
+        min="0" max="100" value="50" step="1">
+      <div class="rbc-slider-labels">
+        <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="rbc-cost-row">
+      <span>禀赋</span>
+      <span>+{{ E }}.00</span>
+    </div>
+    <div class="rbc-cost-row">
+      <span>成本（x² ÷ {{ K }}）</span>
+      <span id="rbc-live-cost">请先选择</span>
+    </div>
+    <div class="rbc-cost-row rbc-penalty-row">
+      <span>罚金（若低于中位数）</span>
+      <span>−{{ L }}.00</span>
+    </div>
+  </div>
+</div>
+
+{{ next_button }}
+
+<script>
+  (function() {
+    var slider = document.getElementById('rbc-choice-slider');
+    var hiddenChoice = document.getElementById('id_x_choice');
+    var display = document.getElementById('rbc-choice-display');
+    var liveCost = document.getElementById('rbc-live-cost');
+    var submitButton = document.querySelector('button[type="submit"], input[type="submit"]');
+    var K = {{ K }};
+    var hasChosen = false;
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.style.display = 'none';
+      if (submitButton.tagName.toLowerCase() === 'button') {
+        submitButton.textContent = '提交';
+      } else {
+        submitButton.value = '提交';
+      }
+    }
+
+    function update(markChosen) {
+      if (markChosen) {
+        hasChosen = true;
+      }
+      var x = parseInt(slider.value, 10);
+      if (!hasChosen) {
+        hiddenChoice.value = '';
+        return;
+      }
+      hiddenChoice.value = x;
+      slider.classList.remove('rbc-slider-untouched');
+      display.classList.remove('rbc-placeholder');
+      display.textContent = x;
+      var cost = (x * x) / K;
+      liveCost.textContent = '−' + cost.toFixed(2);
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.style.display = '';
+      }
+    }
+    slider.addEventListener('input', function() { update(true); });
+    slider.addEventListener('change', function() { update(true); });
+
+    var form = slider.closest('form');
+    if (form) {
+      form.addEventListener('submit', function(event) {
+        if (!hasChosen) {
+          event.preventDefault();
+          display.textContent = '请先选择一个数字再提交';
+        }
+      });
+    }
+  })();
+</script>
+{{ endblock }}

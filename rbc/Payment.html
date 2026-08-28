@@ -1,0 +1,20 @@
+{{ block title }}实验结束{{ endblock }}
+
+{{ block content }}
+<div class="card mb-3">
+  <div class="card-body">
+    <h4 class="mb-3">你的报酬</h4>
+    <p>随机抽中的支付轮为<strong>第 {{ paid_round }} 轮</strong>。</p>
+    <table class="table table-sm">
+      <tbody>
+        <tr><td>第 {{ paid_round }} 轮收益</td><td class="text-end">{{ paid_amount }} 点</td></tr>
+        <tr><td>兑换比例</td><td class="text-end">每点 ¥ {{ point_value }}</td></tr>
+        <tr><td>折算后收益</td><td class="text-end">¥ {{ bonus }}</td></tr>
+        <tr><td>出场费</td><td class="text-end">¥ {{ participation_fee }}</td></tr>
+        <tr class="fw-bold"><td>合计</td><td class="text-end">¥ {{ total }}</td></tr>
+      </tbody>
+    </table>
+    <p class="mt-4">感谢你的参与！</p>
+  </div>
+</div>
+{{ endblock }}

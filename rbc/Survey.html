@@ -1,0 +1,65 @@
+{{ block title }}问卷{{ endblock }}
+
+{{ block content }}
+<style>
+  .survey-card {
+    margin-bottom: 16px;
+  }
+  .risk-scale .controls,
+  .risk-scale .form-check-inline {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .risk-scale .form-check-inline {
+    gap: 4px;
+    margin-right: 8px;
+  }
+</style>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <p>请回答以下关于你实验体验的问题。</p>
+  </div>
+</div>
+
+<div class="card survey-card">
+  <div class="card-body risk-scale">
+    {{ formfield 'survey_risk' }}
+  </div>
+</div>
+
+<div class="card survey-card">
+  <div class="card-body">
+    {{ formfield 'survey_strategy' }}
+  </div>
+</div>
+
+<div class="card survey-card">
+  <div class="card-body">
+    {{ formfield 'survey_use_median' }}
+    {{ formfield 'survey_median_importance' }}
+    {{ formfield 'survey_use_prior_medians' }}
+    {{ formfield 'survey_prior_medians_importance' }}
+  </div>
+</div>
+
+<div class="card survey-card">
+  <div class="card-body">
+    {{ formfield 'survey_best' }}
+    {{ formfield 'survey_best_other' }}
+  </div>
+</div>
+
+<div class="card survey-card">
+  <div class="card-body">
+    {{ formfield 'survey_prior_bc' }}
+    {{ formfield 'survey_game_theory' }}
+    {{ formfield 'survey_gender' }}
+    {{ formfield 'survey_age' }}
+  </div>
+</div>
+
+{{ next_button }}
+{{ endblock }}

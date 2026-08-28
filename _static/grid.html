@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>oTree 多被试网格测试台</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "PingFang SC", sans-serif; background: #1e1e24; color: #eee; }
+  #toolbar {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    padding: 10px 14px; background: #2a2a33; border-bottom: 1px solid #444;
+  }
+  #toolbar label { font-size: 13px; color: #bbb; }
+  select, input[type=number], input[type=text] {
+    background: #1e1e24; color: #eee; border: 1px solid #555; border-radius: 4px; padding: 4px 6px; font-size: 13px;
+    max-width: 340px;
+  }
+  input[type=number] { width: 56px; }
+  button {
+    background: #4a7cff; color: #fff; border: 0; border-radius: 4px;
+    padding: 6px 12px; font-size: 13px; cursor: pointer;
+  }
+  button.secondary { background: #555; }
+  button:hover { filter: brightness(1.1); }
+  #status { font-size: 13px; color: #9fd49f; }
+  #grid {
+    display: grid; gap: 6px; padding: 6px;
+    grid-template-columns: repeat(var(--cols, 5), 1fr);
+  }
+  .tile { background: #111; border: 1px solid #444; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; }
+  .tile.tile-error { border-color: #e5484d; box-shadow: 0 0 0 1px #e5484d; }
+  .tile.tile-done { border-color: #2e9e5b; }
+  .tile-header {
+    display: flex; align-items: center; gap: 6px;
+    padding: 3px 8px; background: #33333d; font-size: 12px; color: #ccc; white-space: nowrap;
+  }
+  .tile-header .pname { font-weight: 600; color: #fff; }
+  .tile-header .pagename { color: #8ab4ff; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+  .tile-header a { color: #8ab4ff; text-decoration: none; font-size: 11px; }
+  .tile-header button { padding: 1px 7px; font-size: 11px; background: #555; }
+  .frame-wrap { position: relative; overflow: hidden; height: var(--tileH, 420px); background: #fff; }
+  .frame-wrap .snapview { position: absolute; left: 0; top: 0; z-index: 2; background: #fff; }
+  .tile-header .histpos { color: #ffb066; font-size: 11px; min-width: 0; }
+  .tile-header .hist-back, .tile-header .hist-fwd { padding: 1px 5px; }
+  .frame-wrap iframe {
+    border: 0;
+    width: calc(100% / var(--zoom, 0.6));
+    height: calc(100% / var(--zoom, 0.6));
+    transform: scale(var(--zoom, 0.6));
+    transform-origin: 0 0;
+  }
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <label><span data-i18n="cfg"></span> <select id="cfg"><option data-i18n="loading"></option></select></label>
+  <label><span data-i18n="npart"></span> <input type="number" id="npart" value="15" min="1" max="60"></label>
+  <button id="create" data-i18n="create"></button>
+  <label><span data-i18n="orCode"></span> <input type="text" id="code" placeholder="j5xkzmxq" size="9"></label>
+  <button id="attach" class="secondary" data-i18n="attach"></button>
+  <span style="flex:1"></span>
+  <label><span data-i18n="cols"></span> <input type="number" id="cols" value="5" min="1" max="10"></label>
+  <label><span data-i18n="zoom"></span> <input type="range" id="zoom" min="0.3" max="1" step="0.05" value="0.6"></label>
+  <label><span data-i18n="tileH"></span> <input type="range" id="tileH" min="200" max="800" step="20" value="420"></label>
+  <button id="reloadAll" class="secondary" data-i18n="reloadAll"></button>
+  <label><span data-i18n="strategy"></span>
+    <select id="strategy"></select>
+  </label>
+  <label><span data-i18n="speed"></span> <input type="range" id="speed" min="0.5" max="15" step="0.5" value="1.5" style="width:90px">
+    <span id="speedVal" style="color:#eee"></span></label>
+  <button id="stepOnce" style="background:#4a7cff" data-i18n="stepOnce"></button>
+  <button id="autoToggle" style="background:#2e9e5b"></button>
+  <a id="monitorLink" href="#" target="_blank" style="color:#8ab4ff;font-size:13px;display:none" data-i18n="monitor"></a>
+  <button id="langbtn" class="secondary" title="切换语言 / Switch language"></button>
+  <span id="status"></span>
+</div>
+
+<div id="grid"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const root = document.documentElement;
+
+// ===================== 界面语言（中/EN） =====================
+const I18N = {
+  zh: {
+    title: 'oTree 多被试网格测试台',
+    cfg: '场次配置', loading: '加载中…', npart: '人数',
+    create: '新建场次并平铺', orCode: '或已有场次代码', attach: '载入',
+    cols: '列数', zoom: '缩放', tileH: '高度', reloadAll: '全部刷新',
+    strategy: '策略', stMixed: '混合 (各格轮流分配)',
+    snapTag: '快照', snapPrevT: '退回上一页（只读快照；oTree 不支持真实回退）', snapFwdT: '前进一页；到头回到实时页面',
+    speed: '速度', perStep: 's/步',
+    startAuto: '▶ 自动推进', pauseAuto: '⏸ 暂停自动', stepOnce: '⏭ 下一页',
+    stepped: '已单步推进（勾选"自动"的格子各走一页）',
+    monitor: '打开 Monitor',
+    newTab: '新标签', auto: '自动', reload: '刷新', waiting: '(等待页)',
+    creating: '创建场次中…', needCode: '请输入场次代码',
+    cfgFail: '读取配置失败: ',
+    tiled: (code, n) => `场次 ${code}：${n} 名被试已平铺`,
+    autoPaused: '自动推进已暂停',
+    autoRunning: '自动推进中…（取消某格的"自动"勾选即可手动控制它）',
+  },
+  en: {
+    title: 'oTree Multi-Participant Grid Console',
+    cfg: 'Session config', loading: 'Loading…', npart: 'Participants',
+    create: 'Create & tile', orCode: 'or existing session code', attach: 'Attach',
+    cols: 'Columns', zoom: 'Zoom', tileH: 'Height', reloadAll: 'Reload all',
+    strategy: 'Strategy', stMixed: 'Mixed (rotate per tile)',
+    snapTag: 'snap', snapPrevT: 'Back one page (read-only snapshot; oTree cannot truly rewind)', snapFwdT: 'Forward; past the end returns to live',
+    speed: 'Speed', perStep: 's/step',
+    startAuto: '▶ Auto-advance', pauseAuto: '⏸ Pause', stepOnce: '⏭ Step',
+    stepped: 'Stepped one page (auto-checked tiles)',
+    monitor: 'Open Monitor',
+    newTab: 'New tab', auto: 'auto', reload: 'Reload', waiting: '(waiting)',
+    creating: 'Creating session…', needCode: 'Enter a session code',
+    cfgFail: 'Failed to load configs: ',
+    tiled: (code, n) => `Session ${code}: ${n} participants tiled`,
+    autoRunning: 'Auto-advancing… (uncheck "auto" on a tile to control it manually)',
+    autoPaused: 'Auto-advance paused',
+  },
+};
+let LANG = localStorage.getItem('grid-lang') || 'zh';
+if (!I18N[LANG]) LANG = 'zh';
+const M = () => I18N[LANG];
+
+function applyLang() {
+  root.lang = LANG === 'zh' ? 'zh' : 'en';
+  document.title = M().title;
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = M()[el.dataset.i18n]; });
+  $('langbtn').textContent = LANG === 'zh' ? 'EN' : '中文';
+  $('speedVal').textContent = $('speed').value + M().perStep;
+  $('autoToggle').textContent = (typeof autoTimer !== 'undefined' && autoTimer) ? M().pauseAuto : M().startAuto;
+  [...$('strategy').options].forEach(o => {
+    o.textContent = o.value === 'mixed' ? M().stMixed
+      : ((window.STRATEGIES || []).find(st => st.value === o.value) || {label:{}}).label[LANG] || o.value;
+  });
+  document.querySelectorAll('#grid .tile').forEach(tile => {
+    const a = tile.querySelector('.newtab-link');   if (a) a.textContent = M().newTab;
+    const s = tile.querySelector('.auto-lab-text'); if (s) s.textContent = M().auto;
+    const b = tile.querySelector('.reload-btn');    if (b) b.textContent = M().reload;
+    const hb = tile.querySelector('.hist-back');    if (hb) hb.title = M().snapPrevT;
+    const hf = tile.querySelector('.hist-fwd');     if (hf) hf.title = M().snapFwdT;
+  });
+}
+
+function buildStrategyOptions() {
+  const sel = $('strategy'); sel.innerHTML = '';
+  (window.STRATEGIES || []).forEach(st => {
+    const o = document.createElement('option'); o.value = st.value; sel.appendChild(o);
+  });
+  if ((window.STRATEGIES || []).length > 1) {
+    const o = document.createElement('option'); o.value = 'mixed'; sel.appendChild(o);
+  }
+}
+$('langbtn').onclick = () => {
+  LANG = LANG === 'zh' ? 'en' : 'zh';
+  localStorage.setItem('grid-lang', LANG);
+  applyLang();
+};
+
+function applyLayout() {
+  root.style.setProperty('--cols', $('cols').value);
+  root.style.setProperty('--zoom', $('zoom').value);
+  root.style.setProperty('--tileH', $('tileH').value + 'px');
+}
+['cols','zoom','tileH'].forEach(id => $(id).addEventListener('input', applyLayout));
+applyLayout();
+
+function setStatus(msg, err) {
+  $('status').textContent = msg;
+  $('status').style.color = err ? '#ff8a8a' : '#9fd49f';
+}
+
+async function api(path, opts) {
+  const res = await fetch(path, opts);
+  if (!res.ok) throw new Error(path + ' → HTTP ' + res.status + ': ' + (await res.text()).slice(0, 200));
+  return res.json();
+}
+
+// ---- 从服务器动态读取 session configs（不硬编码，配置改了自动跟上）----
+async function loadConfigs() {
+  try {
+    const configs = await api('/api/session_configs');
+    const sel = $('cfg');
+    sel.innerHTML = '';
+    configs.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.name;
+      o.textContent = c.display_name || c.name;
+      o.dataset.n = c.num_demo_participants || 1;
+      sel.appendChild(o);
+    });
+    sel.onchange = () => { $('npart').value = sel.selectedOptions[0].dataset.n; };
+    // 默认选中第一个正式配置（名字不含 test/preview 的），否则第一个
+    const official = [...sel.options].find(o => !/test|preview/i.test(o.value));
+    if (official) sel.value = official.value;
+    sel.onchange();
+  } catch (e) { setStatus(M().cfgFail + e.message, true); }
+}
+loadConfigs();
+
+// URL ?code=xxx：自动载入已有场次（供脚本/命令行直接带参打开）
+const urlCode = new URLSearchParams(location.search).get('code');
+if (urlCode) {
+  $('code').value = urlCode;
+  (async () => { try { buildGrid(await api('/api/sessions/' + urlCode)); } catch (e) { setStatus(e.message, true); } })();
+}
+
+let sessionConfig = {};   // 保存当前场次 config（penalty 等），供策略计算用
+
+function buildGrid(session) {
+  sessionConfig = session.config || {};
+  const grid = $('grid');
+  grid.innerHTML = '';
+  session.participants.forEach(p => {
+    const url = '/InitializeParticipant/' + p.code;
+    const tile = document.createElement('div');
+    tile.className = 'tile';
+    tile.innerHTML = `
+      <div class="tile-header">
+        <span class="pname">P${p.id_in_session}</span>
+        <span class="pagename"></span>
+        <button class="hist-back" title="${M().snapPrevT}">◀</button><span class="histpos"></span><button class="hist-fwd" title="${M().snapFwdT}">▶</button>
+        <a href="${url}" target="_blank" class="newtab-link">${M().newTab}</a>
+        <label style="font-size:11px;color:#9fd49f"><input type="checkbox" class="auto-cb" checked> <span class="auto-lab-text">${M().auto}</span></label>
+        <button class="reload-btn">${M().reload}</button>
+      </div>
+      <div class="frame-wrap"><iframe src="${url}"></iframe></div>`;
+    tile.querySelector('.reload-btn').onclick = () => {
+      const f = tile.querySelector('.frame-wrap > iframe:not(.snapview)');
+      f.src = f.src;   // oTree 服务端会重定向回被试当前页
+    };
+    tile.querySelector('.hist-back').onclick = () => snapNav(tile, -1);
+    tile.querySelector('.hist-fwd').onclick  = () => snapNav(tile, +1);
+    grid.appendChild(tile);
+  });
+  $('monitorLink').href = '/SessionMonitor/' + session.code;
+  $('monitorLink').style.display = 'inline';
+  $('code').value = session.code;
+  setStatus(M().tiled(session.code, session.participants.length));
+  if (!pageWatcher) pageWatcher = setInterval(updateTileLabels, 2000);
+}
+
+$('create').onclick = async () => {
+  try {
+    setStatus(M().creating);
+    const created = await api('/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_config_name: $('cfg').value,
+        num_participants: parseInt($('npart').value, 10),
+      }),
+    });
+    buildGrid(await api('/api/sessions/' + created.code));
+  } catch (e) { setStatus(e.message, true); }
+};
+
+$('attach').onclick = async () => {
+  try {
+    const code = $('code').value.trim();
+    if (!code) return setStatus(M().needCode, true);
+    buildGrid(await api('/api/sessions/' + code));
+  } catch (e) { setStatus(e.message, true); }
+};
+
+$('reloadAll').onclick = () => {
+  document.querySelectorAll('#grid iframe').forEach(f => { f.src = f.src; });
+};
+
+// ---- 每格状态标签：当前页面名 + 出错红框 / 完成绿框 ----
+let pageWatcher = null;
+function updateTileLabels() {
+  document.querySelectorAll('#grid .tile').forEach(tile => {
+    let doc;
+    try { doc = tile.querySelector('iframe').contentDocument; } catch (e) { return; }
+    if (!doc) return;
+    const t = doc.getElementById('_otree-title');
+    const label = tile.querySelector('.pagename');
+    const hasFormError = doc.querySelector('.otree-form-errors, .invalid-feedback, .has-errors');
+    const isServerError = /Application error|Traceback|Server Error/i.test(doc.title || '');
+    if (t) label.textContent = t.textContent.trim();
+    else if (doc.body && /wait/i.test(doc.body.textContent || '')) label.textContent = M().waiting;
+    // 每 2s 存/更新当前页快照（同页覆盖，翻页新增），供 ◀ 回看
+    try {
+      const w = tile.querySelector('iframe').contentWindow;
+      const url = w.location.pathname + w.location.search;
+      if (doc.body && !isServerError) {
+        const snaps = tile._snaps || (tile._snaps = []);
+        const entry = { url, title: label.textContent, html: doc.documentElement.outerHTML };
+        const last = snaps[snaps.length - 1];
+        if (last && last.url === url) Object.assign(last, entry);
+        else { snaps.push(entry); if (snaps.length > 50) snaps.shift(); }
+      }
+    } catch (e) {}
+    tile.classList.toggle('tile-error', !!(hasFormError || isServerError));
+    tile.classList.toggle('tile-done', !!t && /complete|payment|thank|结束|完成|感谢/i.test(t.textContent));
+  });
+}
+
+// ---- 快照回看：oTree 服务端不支持回退，◀ 显示已存快照（只读），▶ 到头回实时 ----
+function snapNav(tile, dir) {
+  const snaps = tile._snaps || [];
+  if (!snaps.length) return;
+  if (dir < 0) {
+    if (tile._viewIdx == null) { if (snaps.length < 2) return; tile._viewIdx = snaps.length - 2; }
+    else tile._viewIdx = Math.max(0, tile._viewIdx - 1);
+  } else {
+    if (tile._viewIdx == null) return;
+    tile._viewIdx += 1;
+    if (tile._viewIdx >= snaps.length) tile._viewIdx = null;   // 回到实时
+  }
+  renderSnap(tile);
+}
+function renderSnap(tile) {
+  const wrap = tile.querySelector('.frame-wrap');
+  let ov = wrap.querySelector('.snapview');
+  const pos = tile.querySelector('.histpos');
+  if (tile._viewIdx == null) { if (ov) ov.remove(); pos.textContent = ''; return; }
+  const snap = tile._snaps[tile._viewIdx];
+  if (!ov) {
+    ov = document.createElement('iframe');
+    ov.className = 'snapview';
+    ov.setAttribute('sandbox', 'allow-same-origin');   // 无脚本：静态只读渲染
+    wrap.appendChild(ov);
+  }
+  ov.srcdoc = snap.html.replace(/<head([^>]*)>/i, `<head$1><base href="${location.origin}">`);
+  pos.textContent = `${M().snapTag} ${tile._viewIdx + 1}/${tile._snaps.length}`;
+}
+
+// ===================== 自动推进 =====================
+// ┌──────────────── 项目定制区（PROJECT-SPECIFIC）────────────────┐
+// 安装到具体 oTree 项目时按需修改这一块；其余代码是通用的。
+//
+// KNOWN_ANSWERS：服务端校验必须答对的字段（理解题等），
+//   key = 表单字段 name，value = 正确选项的 value。
+//   从该项目 __init__.py 的 error_message / 校验逻辑里抄。
+//   没列出的单选/下拉会随机选（答错会被退回并换随机值重试）。
+window.KNOWN_ANSWERS = {
+  // —— RBC 项目（rbc/__init__.py Quiz.error_message）——
+  quiz_below_median: 'yes',
+  quiz_match_median: 'no_penalty',
+  quiz_cost: 'higher',
+  quiz_equal_earnings: 'no_penalty_formula',
+  quiz_below_earnings: 'penalty_formula',
+  quiz_fixed_penalty: 'fixed',
+  // 第 6 题填空（数字输入按 name 匹配；值可为函数，收 {config} 场次配置）
+  quiz_cost_20: 2,               // 20²/200
+  quiz_cost_60: 18,              // 60²/200
+  quiz_penalty_20: c => c.config.penalty ?? 20,   // 固定罚金 L，随场次
+  quiz_penalty_60: c => c.config.penalty ?? 20,
+};
+// 把 KNOWN_ANSWERS 解析成纯值（函数代入当前场次 config）——autotest 注入 P1 时也用它
+window.resolvedAnswers = () => Object.fromEntries(
+  Object.entries(window.KNOWN_ANSWERS || {}).map(([k, v]) =>
+    [k, typeof v === 'function' ? v({ config: sessionConfig }) : v]));
+// STRATEGY_PARAMS：策略 pick 函数可用的项目参数。
+window.STRATEGY_PARAMS = { K: 200 };   // RBC params.py COST_DIVISOR
+// STRATEGIES：机器人策略下拉 —— ⚠ 按目标实验的规则定义，不要沿用别的项目的！
+//   {value, label:{zh,en}, pick(ctx)}；ctx = {lo, hi, name(字段名), tile, rand, clamp,
+//   lastMedian, params(=STRATEGY_PARAMS), config(=场次config)}。
+//   pick 返回 null/NaN 时该次取值退化为随机。'mixed' 由外壳自动追加（各格轮流）。
+window.STRATEGIES = [
+  { value: 'random', label: { zh: '随机 (均匀)', en: 'Random (uniform)' },
+    pick(c) { return c.lo + c.rand(c.hi - c.lo + 1); } },
+  { value: 'equilibrium', label: { zh: '均衡值 √(L·K)', en: 'Equilibrium √(L·K)' },
+    pick(c) { const L = c.config.penalty, K = c.params.K;
+              return (L == null || K == null) ? null : Math.sqrt(L * K); } },
+  { value: 'herd', label: { zh: '跟风 (上轮中位数±3)', en: 'Herd (last median ±3)' },
+    pick(c) { return isNaN(c.lastMedian) ? null : c.lastMedian - 3 + c.rand(7); } },
+  { value: 'lowball', label: { zh: '压低 (0–15)', en: 'Lowball (0–15)' },
+    pick(c) { return c.rand(16); } },
+];
+// └───────────────────────────────────────────────────────────────┘
+const QUIZ_ANSWERS = window.KNOWN_ANSWERS;
+const rand = n => Math.floor(Math.random() * n);
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, Math.round(v)));
+
+// ---- 机器人策略：按 window.STRATEGIES 的 pick(ctx) 取值 ----
+function pickX(tile, lo, hi, inp) {
+  const list = window.STRATEGIES || [];
+  let val = $('strategy').value;
+  if (val === 'mixed' && list.length) {
+    const idx = [...tile.parentNode.children].indexOf(tile);
+    val = list[idx % list.length].value;
+  }
+  const st = list.find(x => x.value === val);
+  if (!st) return lo + rand(hi - lo + 1);
+  try {
+    const v = st.pick({ lo, hi, name: (inp && inp.name) || '', tile, rand, clamp,
+                        lastMedian: parseFloat(tile.dataset.lastMedian),
+                        params: window.STRATEGY_PARAMS || {}, config: sessionConfig });
+    return (v == null || isNaN(v)) ? lo + rand(hi - lo + 1) : clamp(v, lo, hi);
+  } catch (e) { return lo + rand(hi - lo + 1); }
+}
+
+// 对单个格子的当前页面填表 + 提交；返回 true 表示这一步提交了
+function autoStep(tile) {
+  const iframe = tile.querySelector('iframe');
+  let doc;
+  try { doc = iframe.contentDocument; } catch (e) { return false; }
+  if (!doc || doc.readyState !== 'complete') return false;
+  if (doc.__autoSubmitted) return false;          // 本页已提交，等下一页加载
+
+  // Results 页：先记下本轮中位数（herd 策略下一轮要用）
+  const titleEl = doc.getElementById('_otree-title');
+  if (titleEl && /result|结果/i.test(titleEl.textContent)) {
+    const h3 = doc.querySelector('h3');
+    if (h3 && !isNaN(parseFloat(h3.textContent))) tile.dataset.lastMedian = parseFloat(h3.textContent);
+  }
+
+  const form = doc.getElementById('form');
+  if (!form) return false;                        // 等待页 / 无表单页，oTree 自己会推进
+
+  // --- Choice 页：滑块 + 隐藏字段，必须触发 input 事件解锁提交按钮 ---
+  doc.querySelectorAll('input[type=range]').forEach(slider => {
+    slider.value = pickX(tile, +slider.min || 0, +slider.max || 100, slider);
+    slider.dispatchEvent(new Event('input', { bubbles: true }));
+    slider.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+
+  // --- 单选：已知 Quiz 用正确答案，其他随机 ---
+  const radioGroups = {};
+  form.querySelectorAll('input[type=radio]').forEach(r => {
+    (radioGroups[r.name] = radioGroups[r.name] || []).push(r);
+  });
+  for (const [name, radios] of Object.entries(radioGroups)) {
+    const correct = QUIZ_ANSWERS[name];
+    let pick = correct && radios.find(r => r.value === correct);
+    // 数值型决策单选（≥5 个数字选项，如 0–10 发送额）：跟随策略取最近值
+    if (!pick && radios.length >= 5 && radios.every(r => r.value !== '' && !isNaN(+r.value))) {
+      const vals = radios.map(r => +r.value);
+      const x = pickX(tile, Math.min(...vals), Math.max(...vals), { name });
+      pick = radios.reduce((b, r) => Math.abs(+r.value - x) < Math.abs(+b.value - x) ? r : b, radios[0]);
+    }
+    if (!pick) pick = radios[rand(radios.length)];
+    if (pick) { pick.checked = true; pick.dispatchEvent(new Event('change', { bubbles: true })); }
+  }
+
+  // --- 下拉：随机选一个非空选项 ---
+  form.querySelectorAll('select').forEach(sel => {
+    const opts = [...sel.options].filter(o => o.value !== '');
+    if (opts.length) { sel.value = opts[rand(opts.length)].value; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+  });
+
+  // --- 数字输入：先查 KNOWN_ANSWERS（必答填空），再 belief 策略，最后随机 ---
+  const numAnswers = window.resolvedAnswers ? window.resolvedAnswers() : {};
+  form.querySelectorAll('input[type=number]').forEach(inp => {
+    const min = inp.min !== '' ? +inp.min : 0;
+    const max = inp.max !== '' ? +inp.max : 100;
+    if (numAnswers[inp.name] != null && typeof numAnswers[inp.name] === 'number') {
+      inp.value = numAnswers[inp.name];
+    } else {
+      inp.value = /belief/i.test(inp.name || '') ? pickX(tile, min, max, inp) : min + rand(max - min + 1);
+    }
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+
+  // --- 勾选框（consent）、文本、文本域 ---
+  form.querySelectorAll('input[type=checkbox]').forEach(cb => { cb.checked = true; });
+  form.querySelectorAll('input[type=text]').forEach(inp => { if (!inp.value) inp.value = 'auto test'; });
+  form.querySelectorAll('textarea').forEach(ta => { if (!ta.value) ta.value = 'auto test'; });
+
+  // --- 提交 ---
+  const btn = form.querySelector('.otree-btn-next, button[type=submit], input[type=submit]');
+  if (btn && !btn.disabled) {
+    doc.__autoSubmitted = true;   // 新页面加载后 doc 会换掉，标记自动失效
+    btn.click();
+    return true;
+  }
+  // 无按钮页（如 Welcome，正式场次由实验员在 Monitor 放行）：测试时直接提交表单绕过
+  const title = doc.getElementById('_otree-title');
+  if (!btn && title && /welcome|欢迎/i.test(title.textContent)) {
+    doc.__autoSubmitted = true;
+    form.submit();
+    return true;
+  }
+  return false;
+}
+
+// ---- 速度控制：每步间隔（秒），拖动立即生效 ----
+const speedMs = () => parseFloat($('speed').value) * 1000;
+$('speed').addEventListener('input', () => {
+  $('speedVal').textContent = $('speed').value + M().perStep;
+});
+
+let autoTimer = null;
+function autoTick() {
+  document.querySelectorAll('#grid .tile').forEach(tile => {
+    if (!tile.querySelector('.auto-cb').checked) return;
+    if (tile._viewIdx != null) return;   // 正在回看快照：暂停该格自动推进
+    // 每个 tile 在半个间隔内随机错峰，模拟被试有快有慢
+    setTimeout(() => autoStep(tile), rand(speedMs() / 2));
+  });
+}
+function scheduleNext() {
+  autoTimer = setTimeout(() => { autoTick(); scheduleNext(); }, speedMs());
+}
+
+$('stepOnce').onclick = () => {
+  document.querySelectorAll('#grid .tile').forEach(tile => {
+    if (!tile.querySelector('.auto-cb').checked) return;
+    if (tile._viewIdx != null) return;   // 回看快照中的格子不动
+    setTimeout(() => autoStep(tile), rand(300));
+  });
+  setStatus(M().stepped);
+};
+
+$('autoToggle').onclick = () => {
+  if (autoTimer) {
+    clearTimeout(autoTimer); autoTimer = null;
+    $('autoToggle').textContent = M().startAuto;
+    $('autoToggle').style.background = '#2e9e5b';
+    setStatus(M().autoPaused);
+  } else {
+    $('autoToggle').textContent = M().pauseAuto;
+    $('autoToggle').style.background = '#c96a2e';
+    setStatus(M().autoRunning);
+    autoTick();
+    scheduleNext();
+  }
+};
+
+buildStrategyOptions();
+applyLang();
+</script>
+</body>
+</html>

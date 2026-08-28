@@ -1,0 +1,12 @@
+venv/
+db.sqlite3
+db.sqlite3.backup_*
+__pycache__/
+*.pyc
+.otree/
+otree-prodserver.pid
+otree-zipserver.pid
+*.log
+.DS_Store
+output/
+tmp/

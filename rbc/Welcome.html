@@ -1,0 +1,38 @@
+{{ block title }}欢迎{{ endblock }}
+
+{{ block content }}
+<style>
+  .welcome-card {
+    max-width: 760px;
+    margin: 40px auto;
+    text-align: center;
+  }
+  .welcome-card h3 {
+    margin-bottom: 18px;
+    color: #1a1a2e;
+  }
+  .welcome-card p {
+    font-size: 18px;
+    line-height: 1.55;
+  }
+  .waiting-note {
+    background: #f0f7ff;
+    border: 1px solid #cde3ff;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-top: 24px;
+    color: #244061;
+  }
+</style>
+
+<div class="card welcome-card">
+  <div class="card-body">
+    <h3>欢迎参加本实验</h3>
+    <p>你即将参加一个 {{ num_rounds }} 轮的决策游戏，
+      与你同组的共有 {{ n }} 名参与者。</p>
+    <div class="waiting-note">
+      请停留在本页面。所有参与者准备就绪后，实验员将开始实验。
+    </div>
+  </div>
+</div>
+{{ endblock }}

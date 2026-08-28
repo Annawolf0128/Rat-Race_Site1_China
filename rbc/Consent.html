@@ -1,0 +1,44 @@
+{{ block title }}知情同意书{{ endblock }}
+
+{{ block content }}
+<style>
+  .consent-card { line-height: 1.6; }
+  .consent-card h5 { margin-top: 18px; margin-bottom: 6px; color: #1a1a2e; }
+  .consent-card p { margin-bottom: 10px; }
+  .consent-agree { background: #f0f7ff; border: 1px solid #cde3ff; border-radius: 8px; padding: 14px 16px; margin-top: 22px; }
+  .consent-agree label { font-weight: 600; cursor: pointer; }
+  .placeholder-italic { color: #888; font-style: italic; }
+</style>
+
+<div class="card mb-3">
+  <div class="card-body consent-card">
+    <h5>研究目的</h5>
+    <p>我们诚邀你参加一项关于人们如何在群体中做决策的研究。</p>
+
+    <h5>你将做什么</h5>
+    <p>你将与其他参与者一起进行一个 {{ num_rounds }} 轮的经济决策游戏。
+    每一轮你需要选择一个 0 到 100 之间的整数。游戏结束后，你将回答一份简短的问卷。
+    整个实验大约需要 15–20 分钟。</p>
+
+    <h5>自愿参与</h5>
+    <p>你的参与完全出于自愿。你可以随时关闭浏览器窗口退出实验，不会有任何不良后果。
+    如果你在完成实验前退出，已收集的数据将被删除，你只会获得出场费。</p>
+
+    <h5>数据与隐私</h5>
+    <p>你的回答将匿名存储，仅用于学术研究。我们不收集任何可识别个人身份的信息。
+    汇总后的结果可能会出现在学术出版物和报告中。</p>
+
+    <h5>报酬</h5>
+    <p>完成实验后，你将获得固定的出场费，外加游戏中<em>随机抽取一轮</em>的收益。</p>
+
+  </div>
+</div>
+
+<div class="consent-agree">
+  <p style="margin: 0 0 10px;">勾选下方选框并继续，即表示你确认已阅读并理解上述信息，
+  并同意参加本实验。</p>
+  {{ formfield 'consent_given' }}
+</div>
+
+{{ next_button }}
+{{ endblock }}

@@ -1,0 +1,36 @@
+{{ block title }}第 {{ round_number }} 轮结果{{ endblock }}
+
+{{ block content }}
+<div class="card mb-3">
+  <div class="card-body text-center">
+    <p class="text-muted small mb-1">你的数字</p>
+    <h2 class="mb-3">{{ x }}</h2>
+    <hr>
+    <p class="text-muted small mb-1">小组中位数</p>
+    <h3 class="mb-0">{{ median }}</h3>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <table class="table table-sm mb-0">
+      <tbody>
+        <tr><td>禀赋</td><td class="text-end">+{{ E }}</td></tr>
+        <tr><td>成本（{{ x }}² ÷ {{ K }}）</td><td class="text-end">−{{ cost }}</td></tr>
+        {{ if below_median }}
+        <tr><td>罚金（低于中位数）</td><td class="text-end">−{{ penalty }}</td></tr>
+        {{ else }}
+        <tr><td>无罚金（≥ 中位数）</td><td class="text-end">−0</td></tr>
+        {{ endif }}
+        <tr class="fw-bold"><td>本轮收益</td><td class="text-end">{{ round_payoff }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{{ if not is_last_round }}
+<p class="text-center text-muted small">点击下方按钮开始下一轮。</p>
+{{ endif }}
+
+{{ next_button }}
+{{ endblock }}

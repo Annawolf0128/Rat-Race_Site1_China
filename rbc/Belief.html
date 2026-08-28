@@ -1,0 +1,32 @@
+{{ block title }}第 {{ round_number }} 轮，共 {{ num_rounds }} 轮 — 你的预测{{ endblock }}
+
+{{ block content }}
+<style>
+  .belief-card {
+    max-width: 720px;
+    margin: 28px auto;
+  }
+  .belief-card p {
+    font-size: 17px;
+    line-height: 1.55;
+  }
+  .belief-field {
+    margin-top: 18px;
+  }
+</style>
+
+<div class="card belief-card">
+  <div class="card-body">
+    <h4 class="mb-3">在选择你的数字之前</h4>
+    <p>
+      请预测本轮的<strong>小组中位数</strong>。
+      请输入一个 <strong>0</strong> 到 <strong>100</strong> 之间的整数。
+    </p>
+    <div class="belief-field">
+      {{ formfield 'belief_median' }}
+    </div>
+  </div>
+</div>
+
+{{ next_button }}
+{{ endblock }}

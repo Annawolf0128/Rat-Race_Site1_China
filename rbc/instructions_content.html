@@ -1,0 +1,25 @@
+<div class="card mb-3">
+  <div class="card-body">
+    <p>你将与其他 <strong>{{ other_players }}</strong> 名玩家一起进行小组游戏。游戏共 <strong>{{ num_rounds }}</strong> 轮，每一轮的规则都相同。</p>
+    <p>每一轮，每位参与者选择一个 <strong>0 到 100</strong> 之间的整数。</p>
+
+    <p>所有人提交数字后，系统会计算<strong>小组中位数</strong>。</p>
+    <p>小组中位数是 <strong>{{ n }}</strong> 个所选数字中位于中间的那个值。</p>
+    <p>例如，若所选数字为 10、30、45、60、80，则小组中位数为 45。</p>
+    <p>如果你的数字<strong>等于</strong>中位数或<strong>高于</strong>中位数，你<strong>无需</strong>支付罚金。</p>
+    <p>如果你的数字<strong>严格低于</strong>中位数，你需支付 <strong>{{ L }}</strong> 的罚金。罚金是固定的：略低于中位数和远低于中位数支付的罚金相同。</p>
+
+    <h5 class="mt-4">你每轮的收益</h5>
+    <p>你的收益 = <strong>{{ E }} − 成本 − 罚金（若低于中位数）</strong>，其中：</p>
+    <ul>
+      <li><strong>成本</strong> =（你的数字）² ÷ {{ K }}。数字越大成本越高。在选择页面上，系统会实时计算并显示你所选数字的成本。你的成本只取决于你自己选择的数字，与其他人的选择无关。</li>
+      <li><strong>罚金</strong> <strong>{{ L }}</strong> <em>仅当</em>你的数字<strong>严格低于</strong>当轮小组中位数时才需支付。</li>
+    </ul>
+
+    <h5 class="mt-4">每轮结束后的反馈</h5>
+    <p>每轮结束后，你将看到当轮的<strong>小组中位数</strong>和<strong>你的收益</strong>。你不会看到其他参与者的选择。</p>
+
+    <h5 class="mt-4">报酬</h5>
+    <p>实验结束时，系统将<strong>随机</strong>抽取<strong>一轮</strong>，你将获得该轮的收益，外加固定出场费 <strong>¥15</strong>。点数与人民币的兑换比例为 <strong>2:1</strong>：例如 1 点相当于 ¥0.50。</p>
+  </div>
+</div>
