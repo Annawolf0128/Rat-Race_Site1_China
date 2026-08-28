@@ -44,8 +44,8 @@ SESSION_CONFIGS = [
         show_welcome=True,
     ),
     dict(
-        name='rbc_site3_small_low',
-        display_name=f'SITE 3: 3 small groups (3 × {GROUP_SIZE_SMALL}), low penalty (L={PENALTY_LOW}), no belief — create 1 session',
+        name='rbc_site1_small_low',
+        display_name=f'SITE 1 (China): 3 small groups (3 × {GROUP_SIZE_SMALL}), low penalty (L={PENALTY_LOW}), no belief — create 1 session',
         app_sequence=['rbc'],
         num_demo_participants=SESSION_SIZE,
         expected_session_size=SESSION_SIZE,
@@ -55,8 +55,8 @@ SESSION_CONFIGS = [
         show_welcome=True,
     ),
     dict(
-        name='rbc_site3_small_high',
-        display_name=f'SITE 3: 3 small groups (3 × {GROUP_SIZE_SMALL}), high penalty (L={PENALTY_HIGH}), no belief — create 1 session',
+        name='rbc_site1_small_high',
+        display_name=f'SITE 1 (China): 3 small groups (3 × {GROUP_SIZE_SMALL}), high penalty (L={PENALTY_HIGH}), no belief — create 1 session',
         app_sequence=['rbc'],
         num_demo_participants=SESSION_SIZE,
         expected_session_size=SESSION_SIZE,
@@ -66,8 +66,8 @@ SESSION_CONFIGS = [
         show_welcome=True,
     ),
     dict(
-        name='rbc_site3_large_low',
-        display_name=f'SITE 3: 1 large group (1 × {GROUP_SIZE_LARGE}), low penalty (L={PENALTY_LOW}), no belief — create 3 sessions',
+        name='rbc_site1_large_low',
+        display_name=f'SITE 1 (China): 1 large group (1 × {GROUP_SIZE_LARGE}), low penalty (L={PENALTY_LOW}), no belief — create 3 sessions',
         app_sequence=['rbc'],
         num_demo_participants=SESSION_SIZE,
         expected_session_size=SESSION_SIZE,
@@ -77,8 +77,8 @@ SESSION_CONFIGS = [
         show_welcome=True,
     ),
     dict(
-        name='rbc_site3_large_high',
-        display_name=f'SITE 3: 1 large group (1 × {GROUP_SIZE_LARGE}), high penalty (L={PENALTY_HIGH}), no belief — create 3 sessions',
+        name='rbc_site1_large_high',
+        display_name=f'SITE 1 (China): 1 large group (1 × {GROUP_SIZE_LARGE}), high penalty (L={PENALTY_HIGH}), no belief — create 3 sessions',
         app_sequence=['rbc'],
         num_demo_participants=SESSION_SIZE,
         expected_session_size=SESSION_SIZE,
@@ -88,8 +88,8 @@ SESSION_CONFIGS = [
         show_welcome=True,
     ),
     dict(
-        name='rbc_site3_small_low_belief',
-        display_name=f'SITE 3: 3 small groups (3 × {GROUP_SIZE_SMALL}), low penalty (L={PENALTY_LOW}), belief elicitation — create 1 session',
+        name='rbc_site1_small_low_belief',
+        display_name=f'SITE 1 (China): 3 small groups (3 × {GROUP_SIZE_SMALL}), low penalty (L={PENALTY_LOW}), belief elicitation — create 1 session',
         app_sequence=['rbc'],
         num_demo_participants=SESSION_SIZE,
         expected_session_size=SESSION_SIZE,
@@ -100,8 +100,8 @@ SESSION_CONFIGS = [
         show_welcome=True,
     ),
     dict(
-        name='rbc_site3_large_low_belief',
-        display_name=f'SITE 3: 1 large group (1 × {GROUP_SIZE_LARGE}), low penalty (L={PENALTY_LOW}), belief elicitation — create 1 session',
+        name='rbc_site1_large_low_belief',
+        display_name=f'SITE 1 (China): 1 large group (1 × {GROUP_SIZE_LARGE}), low penalty (L={PENALTY_LOW}), belief elicitation — create 1 session',
         app_sequence=['rbc'],
         num_demo_participants=SESSION_SIZE,
         expected_session_size=SESSION_SIZE,
@@ -132,7 +132,7 @@ ADMIN_USERNAME = 'admin'
 ADMIN_PASSWORD = environ.get('OTREE_ADMIN_PASSWORD', '')
 
 DEMO_PAGE_INTRO_HTML = """
-<p>Reversed Beauty Contest — Site 3（中国）。每个正式场次固定招募 15 名被试，只跑一个处理：三组 5 人或一组 15 人。界面语言为中文。</p>
+<p>Reversed Beauty Contest — Site 1（中国）。每个正式场次固定招募 15 名被试，只跑一个处理：三组 5 人或一组 15 人。界面语言为中文。</p>
 """
 
 SECRET_KEY = environ.get('OTREE_SECRET_KEY', 'rbc-dev-only-do-not-use-in-prod')

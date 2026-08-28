@@ -1,6 +1,6 @@
 # Rat Race (RBC) experiment — China site
 
-Standalone Chinese deployment of the oTree Reversed Beauty Contest (RBC / "Rat Race") experiment. Mirror of `site3_China` in the main `rbc-experiment` repository. Identical to Site 2 (Singapore) in all session/treatment settings; the only difference is that all participant-facing text is in Chinese (LANGUAGE_CODE zh-hans). Site 1 and Site 2 projects are not modified by this version.
+Standalone deployment of the oTree Reversed Beauty Contest (RBC / "Rat Race") experiment for the China site (Site 1). All participant-facing text is in Chinese (LANGUAGE_CODE zh-hans); payment is in RMB (¥15 show-up fee, ¥0.50 per point, one common randomly drawn round paid per session).
 
 Each round, participants choose an integer in `[0, 100]`. Higher numbers cost more (cost = x²/k). A fixed penalty `L` is paid by anyone whose choice is **strictly below the group median**. The combination of cost and below-median penalty creates a "match-or-quit" best response and a continuum of symmetric equilibria.
 
@@ -53,12 +53,12 @@ If it still cannot connect to `github.com:443`, check the computer's VPN, firewa
 | `rbc_preview` | 1 | 20 | 2 | 63.2 | Solo quick test, no belief elicitation |
 | `rbc_test_2p_2r` | 2 | 20 | 2 | 63.2 | 2-player quick test |
 | `rbc_test_2p_2r_belief` | 2 | 20 | 2 | 63.2 | 2-player quick test with belief elicitation |
-| `rbc_site2_small_low` | 3 × 5 (15 total) | 20 | 20 | 63.2 | Small–Low |
-| `rbc_site2_small_high` | 3 × 5 (15 total) | 40 | 20 | 89.4 | Small–High |
-| `rbc_site2_large_low` | 1 × 15 (15 total) | 20 | 20 | 63.2 | Large–Low |
-| `rbc_site2_large_high` | 1 × 15 (15 total) | 40 | 20 | 89.4 | Large–High |
-| `rbc_site2_small_low_belief` | 3 × 5 (15 total) | 20 | 20 | 63.2 | Small–Low–Belief |
-| `rbc_site2_large_low_belief` | 1 × 15 (15 total) | 20 | 20 | 63.2 | Large–Low–Belief |
+| `rbc_site1_small_low` | 3 × 5 (15 total) | 20 | 20 | 63.2 | Small–Low |
+| `rbc_site1_small_high` | 3 × 5 (15 total) | 40 | 20 | 89.4 | Small–High |
+| `rbc_site1_large_low` | 1 × 15 (15 total) | 20 | 20 | 63.2 | Large–Low |
+| `rbc_site1_large_high` | 1 × 15 (15 total) | 40 | 20 | 89.4 | Large–High |
+| `rbc_site1_small_low_belief` | 3 × 5 (15 total) | 20 | 20 | 63.2 | Small–Low–Belief |
+| `rbc_site1_large_low_belief` | 1 × 15 (15 total) | 20 | 20 | 63.2 | Large–Low–Belief |
 
 Shared parameters: endowment `E = 100`, cost denominator `k = 200`, `T = 20` rounds by default.
 
@@ -68,12 +68,12 @@ The same oTree configuration can be used to create more than one independent ses
 
 | Treatment | oTree config | Groups per session | Sessions to run | Total groups | Participants |
 |---|---|---:|---:|---:|---:|
-| Small–Low | `rbc_site2_small_low` | 3 × 5 | 1 | 3 | 15 |
-| Small–High | `rbc_site2_small_high` | 3 × 5 | 1 | 3 | 15 |
-| Large–Low | `rbc_site2_large_low` | 1 × 15 | 3 | 3 | 45 |
-| Large–High | `rbc_site2_large_high` | 1 × 15 | 3 | 3 | 45 |
-| Small–Low–Belief | `rbc_site2_small_low_belief` | 3 × 5 | 1 | 3 | 15 |
-| Large–Low–Belief | `rbc_site2_large_low_belief` | 1 × 15 | 1 | 1 | 15 |
+| Small–Low | `rbc_site1_small_low` | 3 × 5 | 1 | 3 | 15 |
+| Small–High | `rbc_site1_small_high` | 3 × 5 | 1 | 3 | 15 |
+| Large–Low | `rbc_site1_large_low` | 1 × 15 | 3 | 3 | 45 |
+| Large–High | `rbc_site1_large_high` | 1 × 15 | 3 | 3 | 45 |
+| Small–Low–Belief | `rbc_site1_small_low_belief` | 3 × 5 | 1 | 3 | 15 |
+| Large–Low–Belief | `rbc_site1_large_low_belief` | 1 × 15 | 1 | 1 | 15 |
 | **Total** |  |  | **10** | **16** | **150** |
 
 This gives each of the four main no-belief blocks three independent groups. The two belief treatments are exploratory additions and each uses one 15-person session.
@@ -90,7 +90,7 @@ Group formation wait page → Welcome → Consent → Instructions → Quiz
 ## Project layout
 
 ```
-site2_Singapore/
+Rat-Race_Site1_China/
 ├── settings.py          # SESSION_CONFIGS, participation fee, currency
 ├── requirements.txt     # otree>=5.10,<6
 ├── _static/             # Required by oTree (empty placeholder)
@@ -130,7 +130,7 @@ For a public URL (so remote participants can join), deploy via [oTree Hub](https
 
 ## Implementation notes
 
-- Every Site 2 official session requires exactly 15 participants and contains one treatment only. A small-arm session forms three groups of 5; a large-arm session forms one group of 15. Group membership then stays unchanged across all rounds.
+- Every official session requires exactly 15 participants and contains one treatment only. A small-arm session forms three groups of 5; a large-arm session forms one group of 15. Group membership then stays unchanged across all rounds.
 - For the four main no-belief blocks, run each small-group configuration once and each large-group configuration three times, giving three groups per block. Run each belief configuration once. This schedule contains 10 sessions and 150 recruited participants in total.
 - The randomly paid round is drawn once in `creating_session()` and stored on `participant.paid_round`, independent of in-session behaviour.
 - The consent page body is intentionally a placeholder. Replace the text in `rbc/Consent.html` with the institution-specific consent statement (purpose, voluntary participation, data use, contact, ethics ID) before any real run.
