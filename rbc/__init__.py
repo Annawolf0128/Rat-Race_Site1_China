@@ -162,11 +162,9 @@ class Player(BasePlayer):
             "（0 = 完全不愿意，10 = 非常愿意）"
         ),
         widget=widgets.RadioSelectHorizontal,
-        blank=True,
     )
     survey_strategy = models.LongStringField(
-        label="Q2. 每一轮你是如何决定选择哪个数字的？",
-        blank=True,
+        label="Q6. 每一轮你是如何决定选择哪个数字的？",
     )
     survey_use_median = models.StringField(
         choices=[
@@ -175,9 +173,8 @@ class Player(BasePlayer):
             ('sometimes', '有时'),
             ('never', '从不'),
         ],
-        label="Q3. 你是否利用上一轮的中位数来帮助你做决策？",
+        label="Q2. 你是否利用上一轮的中位数来帮助你做决策？",
         widget=widgets.RadioSelect,
-        blank=True,
     )
     survey_median_importance = models.StringField(
         choices=[
@@ -186,9 +183,8 @@ class Player(BasePlayer):
             ('not_much', '不太重要'),
             ('not_at_all', '完全不重要'),
         ],
-        label="Q4. 上一轮的中位数在你的决策中有多重要？",
+        label="Q3. 上一轮的中位数在你的决策中有多重要？",
         widget=widgets.RadioSelect,
-        blank=True,
     )
     survey_use_prior_medians = models.StringField(
         choices=[
@@ -197,9 +193,8 @@ class Player(BasePlayer):
             ('sometimes', '有时'),
             ('never', '从不'),
         ],
-        label="Q5. 你是否利用之前两轮或更多轮的中位数来帮助你做决策？",
+        label="Q4. 你是否利用之前两轮或更多轮的中位数来帮助你做决策？",
         widget=widgets.RadioSelect,
-        blank=True,
     )
     survey_prior_medians_importance = models.StringField(
         choices=[
@@ -208,9 +203,8 @@ class Player(BasePlayer):
             ('not_much', '不太重要'),
             ('not_at_all', '完全不重要'),
         ],
-        label="Q6. 之前两轮或更多轮的中位数在你的决策中有多重要？",
+        label="Q5. 之前两轮或更多轮的中位数在你的决策中有多重要？",
         widget=widgets.RadioSelect,
-        blank=True,
     )
     survey_best = models.StringField(
         choices=[
@@ -221,7 +215,6 @@ class Player(BasePlayer):
         ],
         label="Q7. 你认为每一轮对小组来说最好的结果是什么？",
         widget=widgets.RadioSelect,
-        blank=True,
     )
     survey_best_other = models.StringField(
         label="如选其他，请说明：",
@@ -234,9 +227,8 @@ class Player(BasePlayer):
             ('nonbinary', '非二元性别'),
             ('prefer_not', '不愿透露'),
         ],
-        label="Q10. 性别",
+        label="Q10. 您的性别",
         widget=widgets.RadioSelect,
-        blank=True,
     )
     survey_prior_bc = models.StringField(
         choices=[
@@ -246,7 +238,6 @@ class Player(BasePlayer):
         ],
         label="Q8. 你以前参加过选美竞赛（Beauty Contest）类实验吗？",
         widget=widgets.RadioSelect,
-        blank=True,
     )
     survey_game_theory = models.StringField(
         choices=[
@@ -256,12 +247,10 @@ class Player(BasePlayer):
         ],
         label="Q9. 你学过博弈论或实验经济学吗？",
         widget=widgets.RadioSelect,
-        blank=True,
     )
     survey_age = models.StringField(
         choices=[(str(a), str(a)) for a in range(17, 30)] + [('30+', '30 岁及以上')],
         label="Q11. 年龄",
-        blank=True,
     )
 
 
@@ -480,11 +469,11 @@ class Survey(Page):
     form_model = 'player'
     form_fields = [
         'survey_risk',
-        'survey_strategy',
         'survey_use_median',
         'survey_median_importance',
         'survey_use_prior_medians',
         'survey_prior_medians_importance',
+        'survey_strategy',
         'survey_best',
         'survey_best_other',
         'survey_prior_bc',
@@ -496,6 +485,12 @@ class Survey(Page):
     @staticmethod
     def is_displayed(player: Player):
         return player.round_number == session_num_rounds(player)
+
+    @staticmethod
+    def error_message(player: Player, values):
+        # 其余题目通过必填校验；"其他请说明"仅在 Q7 选 other 时必填
+        if values.get('survey_best') == 'other' and not (values.get('survey_best_other') or '').strip():
+            return "你在 Q7 选择了\"其他\"，请在说明栏填写具体内容。"
 
 
 class Payment(Page):
