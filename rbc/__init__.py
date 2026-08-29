@@ -154,22 +154,6 @@ class Player(BasePlayer):
         widget=widgets.RadioSelect,
     )
 
-    quiz_cost_20 = models.IntegerField(
-        min=0, max=100,
-        label="选 20 的玩家：成本 = ？点",
-    )
-    quiz_cost_60 = models.IntegerField(
-        min=0, max=100,
-        label="选 60 的玩家：成本 = ？点",
-    )
-    quiz_penalty_20 = models.IntegerField(
-        min=0, max=100,
-        label="选 20 的玩家：罚金 = ？点",
-    )
-    quiz_penalty_60 = models.IntegerField(
-        min=0, max=100,
-        label="选 60 的玩家：罚金 = ？点",
-    )
 
     survey_risk = models.IntegerField(
         choices=[(i, str(i)) for i in range(11)],
@@ -379,10 +363,6 @@ class Quiz(Page):
         'quiz_equal_earnings',
         'quiz_below_earnings',
         'quiz_fixed_penalty',
-        'quiz_cost_20',
-        'quiz_cost_60',
-        'quiz_penalty_20',
-        'quiz_penalty_60',
     ]
 
     @staticmethod
@@ -391,18 +371,13 @@ class Quiz(Page):
 
     @staticmethod
     def error_message(player: Player, values):
-        # (字段, 正确答案, 页面题号)；第 6 题是 4 个填空，共用一个题号
-        L = player.session.config.get('penalty', PENALTY_LOW)
+        # (字段, 正确答案, 页面题号)
         correct = [
             ('quiz_match_median', 'no_penalty', 1),
             ('quiz_cost', 'higher', 2),
             ('quiz_equal_earnings', 'no_penalty_formula', 3),
             ('quiz_below_earnings', 'penalty_formula', 4),
             ('quiz_fixed_penalty', 'fixed', 5),
-            ('quiz_cost_20', 2, 6),      # 20²/200
-            ('quiz_cost_60', 18, 6),     # 60²/200
-            ('quiz_penalty_20', L, 6),   # 低于中位数：固定罚金 L
-            ('quiz_penalty_60', L, 6),   # 与差距无关，同样是 L
         ]
         wrong = sorted({num for k, v, num in correct if values.get(k) != v})
         if wrong:

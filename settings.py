@@ -126,7 +126,17 @@ LANGUAGE_CODE = 'zh-hans'
 REAL_WORLD_CURRENCY_CODE = 'CNY'
 USE_POINTS = True
 
-ROOMS = []
+ROOMS = [
+    dict(
+        name='china_lab',
+        display_name='中国实验室 China Lab (15 seats)',
+        # 固定候场室：实验室每台电脑书签设为
+        #   http://<server>/room/china_lab?participant_label=Seat01  （每台机器一个座位号）
+        # 被试开机即候场；实验员人齐后在后台该 room 里 create session 即可开场。
+        participant_label_file='_rooms/seats.txt',
+        use_secure_urls=False,
+    ),
+]
 
 ADMIN_USERNAME = 'admin'
 ADMIN_PASSWORD = environ.get('OTREE_ADMIN_PASSWORD', '')

@@ -347,11 +347,6 @@ window.KNOWN_ANSWERS = {
   quiz_equal_earnings: 'no_penalty_formula',
   quiz_below_earnings: 'penalty_formula',
   quiz_fixed_penalty: 'fixed',
-  // 第 6 题填空（数字输入按 name 匹配；值可为函数，收 {config} 场次配置）
-  quiz_cost_20: 2,               // 20²/200
-  quiz_cost_60: 18,              // 60²/200
-  quiz_penalty_20: c => c.config.penalty ?? 20,   // 固定罚金 L，随场次
-  quiz_penalty_60: c => c.config.penalty ?? 20,
 };
 // 把 KNOWN_ANSWERS 解析成纯值（函数代入当前场次 config）——autotest 注入 P1 时也用它
 window.resolvedAnswers = () => Object.fromEntries(
