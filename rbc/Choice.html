@@ -18,10 +18,10 @@
   }
   .rbc-choice-label {
     text-align: center;
-    color: #666;
-    text-transform: uppercase;
+    color: #1a1a2e;
+    font-weight: 700;
     letter-spacing: 0.5px;
-    font-size: 13px;
+    font-size: 20px;
   }
   .rbc-slider-container { padding: 0 4px; margin-top: 8px; }
   input[type="range"].rbc-slider {
@@ -63,8 +63,9 @@
   .rbc-slider-labels {
     display: flex;
     justify-content: space-between;
-    font-size: 13px;
-    color: #888;
+    font-size: 14px;
+    font-weight: 600;
+    color: #111;
   }
   .rbc-cost-row {
     display: flex;
@@ -102,7 +103,7 @@
       <span>+{{ E }}.00</span>
     </div>
     <div class="rbc-cost-row">
-      <span>成本（x² ÷ {{ K }}）</span>
+      <span>成本（x²/{{ K }}）</span>
       <span id="rbc-live-cost">请先选择</span>
     </div>
     <div class="rbc-cost-row rbc-penalty-row">
