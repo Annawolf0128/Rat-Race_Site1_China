@@ -88,7 +88,6 @@ class Player(BasePlayer):
     belief_median = models.IntegerField(
         min=0, max=100,
         label='你认为本轮小组的中位数会是多少？',
-        blank=True,
     )
     cost = models.FloatField(initial=0)
     penalty_paid = models.FloatField(initial=0)
