@@ -94,6 +94,9 @@ SESSION_FIELDS = []
 LANGUAGE_CODE = 'zh-hans'
 REAL_WORLD_CURRENCY_CODE = 'CNY'
 USE_POINTS = True
+# x^2 / 200 has increments of 0.005 points. Do not round paid points to integers.
+POINTS_DECIMAL_PLACES = 3
+REAL_WORLD_CURRENCY_DECIMAL_PLACES = 2
 
 ROOMS = [
     dict(

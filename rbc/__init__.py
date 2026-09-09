@@ -1,5 +1,6 @@
 from otree.api import *
 import random
+from decimal import Decimal
 
 # All tunable parameters live in params.py — edit there, not here.
 from params import ENDOWMENT, COST_DIVISOR, NUM_ROUNDS, PENALTY_LOW
@@ -265,9 +266,22 @@ def set_payoffs(group: Group):
         median = (sorted_choices[n // 2 - 1] + sorted_choices[n // 2]) / 2.0
     group.median_x = median
     for p in players:
-        p.cost = (p.x_choice ** 2) / C.K
+        cost = Decimal(p.x_choice ** 2) / Decimal(str(C.K))
+        p.cost = float(cost)
         p.penalty_paid = float(L) if p.x_choice < median else 0.0
-        p.round_payoff = C.ENDOWMENT - p.cost - p.penalty_paid
+        p.round_payoff = float(
+            Decimal(str(C.ENDOWMENT)) - cost - Decimal(str(p.penalty_paid))
+        )
+
+
+def settle_payment(player: Player):
+    """Book only the selected round, once the participant submits the survey.
+
+    Convert to Currency before assignment: repeated calls then have an exact
+    zero delta, including half-point payoffs. Rendering Payment never writes.
+    """
+    paid_player = player.in_round(player.participant.paid_round)
+    player.payoff = cu(Decimal(str(paid_player.round_payoff)))
 
 
 # ============ Pages ============
@@ -492,6 +506,10 @@ class Survey(Page):
         if values.get('survey_best') == 'other' and not (values.get('survey_best_other') or '').strip():
             return "你在 Q7 选择了\"其他\"，请在说明栏填写具体内容。"
 
+    @staticmethod
+    def before_next_page(player: Player, timeout_happened):
+        settle_payment(player)
+
 
 class Payment(Page):
     @staticmethod
@@ -501,19 +519,19 @@ class Payment(Page):
     @staticmethod
     def vars_for_template(player: Player):
         paid_round = player.participant.paid_round
-        paid_player = player.in_round(paid_round)
-        paid_amount = paid_player.round_payoff
-        player.payoff = paid_amount
+        paid_amount = player.payoff
         fee = player.session.config.get('participation_fee', 0)
         point_value = player.session.config.get('real_world_currency_per_point', 1)
-        bonus = paid_amount * point_value
+        # Use exactly the same conversion as the administrator Payments table.
+        bonus = player.participant.payoff_in_real_world_currency()
+        total = player.participant.payoff_plus_participation_fee()
         return dict(
             paid_round=paid_round,
-            paid_amount=round(paid_amount, 2),
+            paid_amount=f"{Decimal(paid_amount):.3f}",
             point_value=point_value,
-            bonus=round(bonus, 2),
-            participation_fee=f"{float(fee):.2f}",  # 数值化，模板统一用 ¥ 前缀显示
-            total=round(bonus + fee, 2),
+            bonus=f"{Decimal(bonus):.2f}",
+            participation_fee=f"{Decimal(fee):.2f}",
+            total=f"{Decimal(total):.2f}",
         )
 
 

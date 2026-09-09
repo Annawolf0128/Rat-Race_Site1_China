@@ -113,7 +113,7 @@
   </div>
 </div>
 
-{{ next_button }}
+<button type="submit" id="rbc-submit" class="otree-btn-next btn btn-primary" disabled hidden>提交</button>
 
 <script>
   (function() {
@@ -121,19 +121,9 @@
     var hiddenChoice = document.getElementById('id_x_choice');
     var display = document.getElementById('rbc-choice-display');
     var liveCost = document.getElementById('rbc-live-cost');
-    var submitButton = document.querySelector('button[type="submit"], input[type="submit"]');
+    var submitButton = document.getElementById('rbc-submit');
     var K = {{ K }};
     var hasChosen = false;
-
-    if (submitButton) {
-      submitButton.disabled = true;
-      submitButton.style.display = 'none';
-      if (submitButton.tagName.toLowerCase() === 'button') {
-        submitButton.textContent = '提交';
-      } else {
-        submitButton.value = '提交';
-      }
-    }
 
     function update(markChosen) {
       if (markChosen) {
@@ -152,20 +142,24 @@
       liveCost.textContent = '−' + cost.toFixed(2);
       if (submitButton) {
         submitButton.disabled = false;
-        submitButton.style.display = '';
+        submitButton.hidden = false;
       }
     }
     slider.addEventListener('input', function() { update(true); });
     slider.addEventListener('change', function() { update(true); });
+    // A click on the initial position (50) may not fire input/change.
+    slider.addEventListener('pointerup', function() { update(true); });
 
     var form = slider.closest('form');
     if (form) {
       form.addEventListener('submit', function(event) {
         if (!hasChosen) {
           event.preventDefault();
+          // Stop oTree's submit handler from applying its 15-second lock.
+          event.stopImmediatePropagation();
           display.textContent = '请先选择一个数字再提交';
         }
-      });
+      }, true);
     }
   })();
 </script>
