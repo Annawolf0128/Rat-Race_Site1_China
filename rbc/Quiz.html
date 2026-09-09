@@ -29,16 +29,16 @@
         你本轮的收益是多少？
       </p>
       <div class="form-check">
-        <input class="form-check-input" type="radio" name="quiz_equal_earnings" id="quiz_equal_earnings_no_penalty" value="no_penalty_formula" required>
-        <label class="form-check-label" for="quiz_equal_earnings_no_penalty">100 − x²/200</label>
+        <input class="form-check-input" type="radio" name="quiz_equal_earnings" id="quiz_equal_earnings_no_penalty" value="no_penalty_formula" required {{ if form.quiz_equal_earnings.data == 'no_penalty_formula' }}checked{{ endif }}>
+        <label class="form-check-label" for="quiz_equal_earnings_no_penalty">{{ E }} − x²/{{ K }}</label>
       </div>
       <div class="form-check">
-        <input class="form-check-input" type="radio" name="quiz_equal_earnings" id="quiz_equal_earnings_penalty" value="penalty_formula">
-        <label class="form-check-label" for="quiz_equal_earnings_penalty">100 − x²/200 − {{ L }}</label>
+        <input class="form-check-input" type="radio" name="quiz_equal_earnings" id="quiz_equal_earnings_penalty" value="penalty_formula" {{ if form.quiz_equal_earnings.data == 'penalty_formula' }}checked{{ endif }}>
+        <label class="form-check-label" for="quiz_equal_earnings_penalty">{{ E }} − x²/{{ K }} − {{ L }}</label>
       </div>
       <div class="form-check">
-        <input class="form-check-input" type="radio" name="quiz_equal_earnings" id="quiz_equal_earnings_linear" value="linear_formula">
-        <label class="form-check-label" for="quiz_equal_earnings_linear">100 − x − {{ L }}</label>
+        <input class="form-check-input" type="radio" name="quiz_equal_earnings" id="quiz_equal_earnings_linear" value="linear_formula" {{ if form.quiz_equal_earnings.data == 'linear_formula' }}checked{{ endif }}>
+        <label class="form-check-label" for="quiz_equal_earnings_linear">{{ E }} − x − {{ L }}</label>
       </div>
     </div>
 
@@ -49,16 +49,16 @@
         你本轮的收益是多少？
       </p>
       <div class="form-check">
-        <input class="form-check-input" type="radio" name="quiz_below_earnings" id="quiz_below_earnings_no_penalty" value="no_penalty_formula" required>
-        <label class="form-check-label" for="quiz_below_earnings_no_penalty">100 − x²/200</label>
+        <input class="form-check-input" type="radio" name="quiz_below_earnings" id="quiz_below_earnings_no_penalty" value="no_penalty_formula" required {{ if form.quiz_below_earnings.data == 'no_penalty_formula' }}checked{{ endif }}>
+        <label class="form-check-label" for="quiz_below_earnings_no_penalty">{{ E }} − x²/{{ K }}</label>
       </div>
       <div class="form-check">
-        <input class="form-check-input" type="radio" name="quiz_below_earnings" id="quiz_below_earnings_penalty" value="penalty_formula">
-        <label class="form-check-label" for="quiz_below_earnings_penalty">100 − x²/200 − {{ L }}</label>
+        <input class="form-check-input" type="radio" name="quiz_below_earnings" id="quiz_below_earnings_penalty" value="penalty_formula" {{ if form.quiz_below_earnings.data == 'penalty_formula' }}checked{{ endif }}>
+        <label class="form-check-label" for="quiz_below_earnings_penalty">{{ E }} − x²/{{ K }} − {{ L }}</label>
       </div>
       <div class="form-check">
-        <input class="form-check-input" type="radio" name="quiz_below_earnings" id="quiz_below_earnings_linear" value="linear_formula">
-        <label class="form-check-label" for="quiz_below_earnings_linear">100 − x − {{ L }}</label>
+        <input class="form-check-input" type="radio" name="quiz_below_earnings" id="quiz_below_earnings_linear" value="linear_formula" {{ if form.quiz_below_earnings.data == 'linear_formula' }}checked{{ endif }}>
+        <label class="form-check-label" for="quiz_below_earnings_linear">{{ E }} − x − {{ L }}</label>
       </div>
     </div>
 
@@ -66,15 +66,15 @@
       <p class="text-muted small mb-1 mt-3">第 5 题</p>
       <p>如果 x &lt; y，罚金是否取决于 x 比 y 低多少？</p>
       <div class="form-check">
-        <input class="form-check-input" type="radio" name="quiz_fixed_penalty" id="quiz_fixed_penalty_fixed" value="fixed" required>
+        <input class="form-check-input" type="radio" name="quiz_fixed_penalty" id="quiz_fixed_penalty_fixed" value="fixed" required {{ if form.quiz_fixed_penalty.data == 'fixed' }}checked{{ endif }}>
         <label class="form-check-label" for="quiz_fixed_penalty_fixed">罚金是相同的固定金额 {{ L }}。</label>
       </div>
       <div class="form-check">
-        <input class="form-check-input" type="radio" name="quiz_fixed_penalty" id="quiz_fixed_penalty_distance" value="distance">
+        <input class="form-check-input" type="radio" name="quiz_fixed_penalty" id="quiz_fixed_penalty_distance" value="distance" {{ if form.quiz_fixed_penalty.data == 'distance' }}checked{{ endif }}>
         <label class="form-check-label" for="quiz_fixed_penalty_distance">x 比 y 低得越多，罚金越大。</label>
       </div>
       <div class="form-check">
-        <input class="form-check-input" type="radio" name="quiz_fixed_penalty" id="quiz_fixed_penalty_half" value="half">
+        <input class="form-check-input" type="radio" name="quiz_fixed_penalty" id="quiz_fixed_penalty_half" value="half" {{ if form.quiz_fixed_penalty.data == 'half' }}checked{{ endif }}>
         <label class="form-check-label" for="quiz_fixed_penalty_half">罚金是 {{ L }} 的一半。</label>
       </div>
     </div>

@@ -139,7 +139,7 @@
       display.classList.remove('rbc-placeholder');
       display.textContent = x;
       var cost = (x * x) / K;
-      liveCost.textContent = '−' + cost.toFixed(2);
+      liveCost.textContent = '−' + cost.toFixed(3);
       if (submitButton) {
         submitButton.disabled = false;
         submitButton.hidden = false;

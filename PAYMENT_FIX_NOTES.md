@@ -24,3 +24,11 @@
 https://groups.google.com/g/otree/c/RcJ5Kz8U6gE
 
 测试方法见 [tests/README.md](tests/README.md)。
+
+## 后续完整验收更新
+
+此文件前面的“未测试 PostgreSQL”是第一轮检查状态，已被本轮验收更新：
+现已在独立 PostgreSQL 上完成六种处理的 HTTP 与真实浏览器全流程、60 人混合负载、Room 重进和服务器重启恢复。
+本轮日志为 0 次 HTTP 500、0 次数据库锁；具体结果见 `output/china_acceptance/checklist.md`（工作区交付目录）。
+此外修复了理解题选项回填、轮数/分组配置校验、管理员强制代填保护和欢迎页统一开始。
+正式启动流程见 DEPLOYMENT_CHECKLIST.md；实际部署和 15 台现场电脑仍需要验收。

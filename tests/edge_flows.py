@@ -1,4 +1,4 @@
-"""Four-round test-only even groups, delayed last player and duplicate request."""
+"""Four-round odd groups, delayed last player and duplicate request."""
 from concurrent_flows import *
 def setup(size,group,rounds=4):
     created=req('/api/sessions',dict(session_config_name='rbc_site1_large_high',num_participants=size,modified_session_config_fields={'expected_session_size':size,'group_size':group,'num_rounds':rounds}),True)
@@ -6,11 +6,11 @@ def setup(size,group,rounds=4):
     codes=[p['code'] for p in detail['participants']]
     for c in codes: req('/api/participant_vars/'+c,{'vars':{'paid_round':1}},True)
     states=burst([lambda c=c:req('/InitializeParticipant/'+c) for c in codes])[0]
-    states=reach(states,'Welcome'); states=move(states,{}); states=move(states,{}); states=move(states,quiz)
+    states=reach(states,'Welcome'); release(created['code']); states=burst([lambda s=s:req(s['url']) for s in states])[0]; states=move(states,{}); states=move(states,quiz)
     return created,codes,states
 if __name__=='__main__':
     report=[]
-    for size,group in [(4,4),(15,15),(15,5)]:
+    for size,group in [(15,15),(15,5)]:
         created,codes,states=setup(size,group)
         rows=[]
         for rn in range(1,5):

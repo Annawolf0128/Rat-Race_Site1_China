@@ -40,51 +40,19 @@
 ⚠ 人数硬校验：每场必须恰好 15 人，多一个少一个都无法建场。建议每场多约 2 名候补，
 未上场者发出场费 ¥15 请回。
 
-## 三、服务器配置（一次性，约 15 分钟）
+## 三、服务器配置
 
-需要一台实验期间保持开机的电脑（Windows/Mac 均可）作为服务器，和被试电脑连同一个局域网。
-需要 **Python 3.9**。
+正式运行改用 **PostgreSQL**。本地 SQLite 已复现等待/后台任务期间的数据库锁，不能用于正式实验。
+详细验收与启动要求见 [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)。
 
-### macOS / Linux
+1. 使用 Python 3.9 创建虚拟环境并安装 `requirements.txt`（固定 oTree 5.11.5）。
+2. 准备专用 PostgreSQL 数据库，设置 `DATABASE_URL`、`OTREE_ADMIN_PASSWORD`、`OTREE_SECRET_KEY`。
+3. 在虚拟环境内运行 `python scripts/start_study.py --port 8000`。
+4. 后台入口是 `http://<服务器IP>:8000/sessions`，用户名 `admin`。
+5. 所有被试电脑必须能访问同一服务器；实际实验室 15 台机器还需现场联机验收。
 
-```bash
-git clone https://github.com/Annawolf0128/Rat-Race_Site1_China.git
-cd Rat-Race_Site1_China
-python3.9 -m venv venv
-source venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-```
-
-### Windows PowerShell
-
-```powershell
-git clone https://github.com/Annawolf0128/Rat-Race_Site1_China.git
-Set-Location Rat-Race_Site1_China
-py -3.9 -m venv venv
-.\venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-```
-
-### 正式启动（每次实验前）
-
-```bash
-# macOS / Linux
-export OTREE_ADMIN_PASSWORD=你们的后台密码
-export OTREE_PRODUCTION=1
-otree prodserver 8000
-
-# Windows PowerShell
-$env:OTREE_ADMIN_PASSWORD="你们的后台密码"
-$env:OTREE_PRODUCTION=1
-otree prodserver 8000
-```
-
-- **必须用 `prodserver`**：数据写入 `db.sqlite3` 真实保存。`devserver` 只用于自测——
-  它的数据在内存里，重启就没了，严禁用于正式实验
-- 查服务器局域网 IP（如 `192.168.1.20`）：Mac `ipconfig getifaddr en0`；Windows `ipconfig`
-- 后台入口：`http://<服务器IP>:8000/demo`，用户名 `admin`，密码即上面设置的
+启动脚本开启正式模式和后台登录保护，并在停止服务器时同时停止其后台 worker。
+不设置 PostgreSQL 的正式模式启动会被拒绝，避免意外回退到 SQLite。
 
 ## 四、被试电脑设置（一次性）
 
@@ -107,7 +75,7 @@ http://<服务器IP>:8000/room/china_lab?participant_label=Seat02   ← 2 号机
 3. 在该 Room 页选择本场的 **Treatment（1–6）** → **Create session**
    （人数会自动填 15）——所有候场浏览器自动进入实验，停在"欢迎"页
 4. 打开该场次的 **Monitor** 页，确认 15 人都到齐欢迎页后，宣读开场说明，
-   点 **"Advance slowest participant(s)"** 统一放行
+   点 **"开始实验（仅欢迎页）"** 统一放行；未全部到齐时按钮不可用，开始后也不可用于跳过答案
 5. 实验自动进行（约 30–45 分钟）。Monitor 页可实时看每人进度：
    - 有人卡在理解测试：系统会提示 ta 第几题错，页内可展开规则重读，一般无需干预
    - 有人掉线：让 ta 重新点击桌面书签即可回到原进度
@@ -115,8 +83,7 @@ http://<服务器IP>:8000/room/china_lab?participant_label=Seat02   ← 2 号机
    （出场费 + 抽中轮收益，页面同时显示抽中的是第几轮），按表付款
 7. **数据导出**：后台 → Data → 下载 CSV（每场结束都导出备份一次）
 
-**出问题需要重开一场**：直接在 Room 里重新 Create session，让被试"再点一次书签"
-即可进入新场次；作废场次在数据导出时按 session code 剔除。
+**中断恢复**：先保留原场次，让参与者用原座位书签重新进入。不要因一人掉线直接创建新场次或重置数据库。若确需作废，应由研究负责人决定并记录场次号与原因。
 
 ## 六、自测工具（正式实验前强烈建议跑一遍）
 
@@ -124,9 +91,9 @@ http://<服务器IP>:8000/room/china_lab?participant_label=Seat02   ← 2 号机
 
 1. 自测时用 `otree devserver 8000`（测试数据不入库）
 2. 浏览器打开 `http://localhost:8000/static/grid.html`
-3. 选一个 Treatment → "新建场次并平铺" → 点 **"▶ 自动推进"**，约 1–2 分钟自动跑完全场；
+3. 选一个 Treatment → "新建场次并平铺" → 打开 Monitor，等 15 人全部到 Welcome 后点 **"开始实验（仅欢迎页）"** → 回网格点 **"▶ 自动推进"**；
    也可取消某格"自动"勾选、亲自体验该被试的画面
-4. 跑通即说明环境配置正确，换 prodserver 进入正式模式
+4. 网格跑通只是本机功能检查；还须通过 PostgreSQL 并发、恢复、导出和实际 15 台机器联机验收
 
 ## 七、常见问题
 

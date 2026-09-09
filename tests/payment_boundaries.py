@@ -1,6 +1,6 @@
 """Run only against a disposable oTree database, from project root."""
 import json, statistics, os
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 from types import SimpleNamespace
 from otree.database import init_orm, db
@@ -30,11 +30,13 @@ for penalty in [20,40]:
                 shown = rbc.Payment.vars_for_template(p)
                 assert Decimal(p.participant.payoff) == expected
                 assert Decimal(shown['total']) == Decimal(p.participant.payoff_plus_participation_fee())
+                cash = (expected * Decimal('0.5')).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP) + Decimal(15)
+                assert Decimal(shown['total']) == cash
             checks += 1
             if penalty==20 and not penalized and x in [10,45,99]:
                 examples.append(dict(x=x, points=str(expected), total=shown['total']))
-# Actual payoff routine with independently calculated medians, including even groups.
-cases = [[0]*5,[100]*15,[10]*15,[0,50,50,50,100],[0,50,51,100],[50,51],[0,0,1,1],[0,49,50,51,100]]
+# Actual payoff routine with independently calculated medians, using odd groups.
+cases = [[0]*5,[100]*15,[10]*15,[0,50,50,50,100],[0,49,50,51,100]]
 for xs in cases:
     players = [SimpleNamespace(x_choice=x) for x in xs]
     group = SimpleNamespace(get_players=lambda:players, session=SimpleNamespace(config={'penalty':40}))

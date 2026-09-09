@@ -20,14 +20,10 @@
 
     {% if not session.use_browser_bots %}
         {% csrf_token %}
-        <button id="advance_users" class="btn btn-secondary" type="button"
-                title="Advance all users currently waiting on the slowest page by one page."
-                onclick="advanceSlowestUsers()">
-            Advance all
-            {% if session.num_participants > ADVANCE_SLOWEST_BATCH_SIZE %}
-                <small>(max {{ ADVANCE_SLOWEST_BATCH_SIZE }} at a time)</small>
-            {% endif %}
-        </button>
+        <button id="advance_users" class="btn btn-primary" type="button" disabled
+                title="Only release after every participant has reached Welcome."
+                onclick="releaseWelcome()">开始实验（仅欢迎页）</button>
+        <p id="release_status" class="text-muted">等待所有参与者到达欢迎页；实验开始后禁止强制推进或代填答案。</p>
     {% endif %}
 
     <div id="refresh_server_error" class="alert alert-danger"
@@ -59,6 +55,19 @@
     <script src="{% static 'otree/js/monitor2.js' %}"></script>
 
     <script>
+        function welcomeReady() {
+            const cells = [...document.querySelectorAll("#monitor-table tbody td[data-field='_current_page_name']")];
+            return cells.length === numParticipants && cells.every(cell => cell.dataset.value === 'Welcome');
+        }
+        function updateReleaseButton() {
+            const button = document.getElementById('advance_users');
+            if (button) button.disabled = !welcomeReady();
+        }
+        function releaseWelcome() {
+            if (!welcomeReady()) return;
+            document.getElementById('advance_users').disabled = true;
+            advanceSlowestUsers();
+        }
         $(document).ready(function () {
             visitedParticipants = [];
             $table = $('#monitor-table');
@@ -66,6 +75,8 @@
             initWebSocket(socketUrl, $tbody, visitedParticipants, $('#msg-refreshed'));
 
             $('[data-bs-toggle="popover"]').popover();
+            new MutationObserver(updateReleaseButton).observe($tbody[0], {childList: true, subtree: true, attributes: true});
+            updateReleaseButton();
         });
 
     </script>

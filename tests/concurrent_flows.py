@@ -2,7 +2,7 @@
 import urllib.request, urllib.parse, json, time, threading, statistics, os
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-BASE='http://localhost:8020'
+BASE=os.environ.get('QA_BASE_URL','http://localhost:8020')
 OUT=Path(os.environ.get('QA_OUTPUT_DIR','tmp/qa_results'))
 OUT.mkdir(parents=True,exist_ok=True)
 def req(path,data=None,api=False):
@@ -27,6 +27,14 @@ def reach(states,target):
         states=burst([lambda s=s:req(s['url']) if s['page']!=target else s for s in states])[0]
         time.sleep(.03)
     return states
+def release(code):
+    import re, http.cookiejar
+    opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+    with opener.open(BASE+'/SessionMonitor/'+code) as response: html=response.read().decode()
+    token=re.search(r'name="csrftoken"[^>]*value="([^"]+)"',html)
+    assert token, 'Admin CSRF token missing'
+    with opener.open(BASE+'/AdvanceSession/'+code, urllib.parse.urlencode({'csrftoken':token.group(1)}).encode(), timeout=30) as response:
+        assert response.status==200
 quiz=dict(quiz_match_median='no_penalty',quiz_cost='higher',quiz_equal_earnings='no_penalty_formula',quiz_below_earnings='penalty_formula',quiz_fixed_penalty='fixed')
 survey=dict(survey_risk=5,survey_use_median='sometimes',survey_median_importance='somewhat',survey_use_prior_medians='sometimes',survey_prior_medians_importance='somewhat',survey_strategy='Synthetic regression test',survey_best='all_zero',survey_best_other='',survey_prior_bc='no',survey_game_theory='no',survey_gender='prefer_not',survey_age='25')
 if __name__ == '__main__':
@@ -37,7 +45,7 @@ if __name__ == '__main__':
         detail=req('/api/sessions/'+created['code'],api=True)
         codes=[p['code'] for p in detail['participants']]
         states=burst([lambda c=c:req('/InitializeParticipant/'+c) for c in codes])[0]
-        states=reach(states,'Welcome'); states=move(states,{})
+        states=reach(states,'Welcome'); release(created['code']); states=burst([lambda s=s:req(s['url']) for s in states])[0]
         assert all(s['page']=='Instructions' for s in states)
         states=move(states,{}); states=move(states,quiz)
         rounds=[]

@@ -1,6 +1,6 @@
 <div class="card mb-3">
   <div class="card-body">
-    <p>你将与其他 <strong>{{ other_players }}</strong> 名玩家一起进行小组游戏。游戏共 <strong>{{ num_rounds }}</strong> 轮，每一轮的规则都相同。</p>
+    <p>你将与其他 <strong>{{ other_players }}</strong> 名玩家一起进行小组游戏。游戏共 <strong>{{ num_rounds }}</strong> 轮，每一轮的规则都相同，整个实验中你的小组成员保持不变。</p>
     <p>每一轮，每位参与者选择一个 <strong>0 到 100</strong> 之间的整数。</p>
 
     <p>所有人提交数字后，系统会计算<strong>小组中位数</strong>。</p>
@@ -19,7 +19,10 @@
     <h5 class="mt-4">每轮结束后的反馈</h5>
     <p>每轮结束后，你将看到当轮的<strong>小组中位数</strong>和<strong>你的收益</strong>。你不会看到其他参与者的选择。</p>
 
+    {{ if elicit_belief }}
+    <p>每轮选择数字前，你需要预测当轮本组的中位数。预测不另计报酬，也不影响你的选择收益。</p>
+    {{ endif }}
     <h5 class="mt-4">报酬</h5>
-    <p>实验结束时，系统将<strong>随机</strong>抽取<strong>一轮</strong>，你将获得该轮的收益，外加固定出场费 <strong>¥15</strong>。点数与人民币的兑换比例为 <strong>2:1</strong>：例如 1 点相当于 ¥0.50。</p>
+    <p>系统为本场实验随机选定<strong>同一支付轮</strong>，在实验结束时公布。你将获得该轮自己的收益，外加固定出场费 <strong>¥{{ participation_fee }}</strong>。每 1 点兑换 <strong>¥{{ point_value }}</strong>。</p>
   </div>
 </div>

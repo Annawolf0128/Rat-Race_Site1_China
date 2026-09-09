@@ -466,13 +466,7 @@ function autoStep(tile) {
     btn.click();
     return true;
   }
-  // 无按钮页（如 Welcome，正式场次由实验员在 Monitor 放行）：测试时直接提交表单绕过
-  const title = doc.getElementById('_otree-title');
-  if (!btn && title && /welcome|欢迎/i.test(title.textContent)) {
-    doc.__autoSubmitted = true;
-    form.submit();
-    return true;
-  }
+  // Welcome intentionally waits for the administrator to release all participants.
   return false;
 }
 

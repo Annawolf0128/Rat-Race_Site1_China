@@ -1,5 +1,10 @@
 from os import environ
 
+# SQLite locks were reproduced during ordinary waits/background worker activity.
+# Refuse a production launch that would silently fall back to SQLite.
+if environ.get('OTREE_PRODUCTION') and not environ.get('DATABASE_URL', '').startswith(('postgres://', 'postgresql://')):
+    raise RuntimeError('正式实验需要 PostgreSQL：请先设置 DATABASE_URL，禁止回退到 SQLite。')
+
 # All tunable parameters live in params.py — edit there, not here.
 from params import (
     PENALTY_LOW,

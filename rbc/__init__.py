@@ -1,6 +1,9 @@
 from otree.api import *
 import random
 from decimal import Decimal
+from starlette.responses import HTMLResponse
+from starlette.exceptions import HTTPException
+from otree import constants as otree_constants
 
 # All tunable parameters live in params.py — edit there, not here.
 from params import ENDOWMENT, COST_DIVISOR, NUM_ROUNDS, PENALTY_LOW
@@ -43,6 +46,22 @@ def creating_session(subsession: Subsession):
                 f"This treatment requires exactly {expected_session_size} participants, "
                 f"but the session was created with {len(players)}."
             )
+
+        config = subsession.session.config
+        rounds = session_num_rounds(subsession)
+        if type(rounds) is not int or not 1 <= rounds <= C.NUM_ROUNDS:
+            raise RuntimeError(f'num_rounds must be an integer from 1 to {C.NUM_ROUNDS}.')
+        sizes = config.get('group_sizes')
+        size = config.get('group_size')
+        if sizes is not None:
+            if not isinstance(sizes, list) or not sizes or any(type(n) is not int or n < 3 or n % 2 == 0 for n in sizes) or sum(sizes) != len(players):
+                raise RuntimeError('group_sizes must contain odd sizes >= 3 and sum to the participant count.')
+        elif type(size) is not int or size < 3 or size % 2 == 0 or len(players) % size:
+            raise RuntimeError('group_size must be odd, >= 3, and divide the participant count.')
+        if C.K <= 0 or config.get('penalty', PENALTY_LOW) < 0:
+            raise RuntimeError('Cost divisor must be positive and penalty nonnegative.')
+        if config['real_world_currency_per_point'] <= 0 or config['participation_fee'] < 0:
+            raise RuntimeError('Payment conversion must be positive and participation fee nonnegative.')
 
         # One common paid round for the whole session (announced at the end),
         # so every participant is paid for the same randomly drawn round.
@@ -286,10 +305,22 @@ def settle_payment(player: Player):
 
 # ============ Pages ============
 
+class ParticipantPage(Page):
+    """oTree 5.11.5 adapter: reject forced advancement before fields are populated.
+
+    Admin release is allowed only on Welcome. Other pages require real responses.
+    This deliberately guards the HTTP submission path, not only the admin button.
+    """
+    def post(self):
+        if self._form_data.get(otree_constants.timeout_happened) and type(self).__name__ != "Welcome":
+            return HTMLResponse("本实验禁止强制推进或自动代填答案。请让参与者完成当前页面。", status_code=409)
+        return super().post()
+
+
 class GroupFormationWaitPage(WaitPage):
     group_by_arrival_time = True
     title_text = "等待分组"
-    body_text = "人数到齐后实验将立即开始。"
+    body_text = "请等待同组参与者到齐。完成分组后，请继续等待实验员统一开始实验。"
 
     @staticmethod
     def is_displayed(player: Player):
@@ -301,7 +332,20 @@ class GroupFormationWaitPage(WaitPage):
             )
         )
 
-class Welcome(Page):
+class Welcome(ParticipantPage):
+    @staticmethod
+    def error_message(player, values):
+        return "请等待实验员统一开始实验。"
+
+    @staticmethod
+    def before_next_page(player, timeout_happened):
+        if not timeout_happened:
+            raise HTTPException(409, "请等待实验员统一开始实验。")
+        if not player.session.vars.get('experiment_started'):
+            if not all(p._current_page_name == 'Welcome' for p in player.session.get_participants()):
+                raise HTTPException(409, "必须等所有参与者到达欢迎页后才能开始。")
+            player.session.vars['experiment_started'] = True
+
     @staticmethod
     def is_displayed(player: Player):
         return (
@@ -317,7 +361,7 @@ class Welcome(Page):
         )
 
 
-class Consent(Page):
+class Consent(ParticipantPage):
     form_model = 'player'
     form_fields = ['consent_given']
 
@@ -338,7 +382,7 @@ class Consent(Page):
             return "你必须勾选同意框才能参加实验。"
 
 
-class Instructions(Page):
+class Instructions(ParticipantPage):
     @staticmethod
     def is_displayed(player: Player):
         return player.round_number == 1
@@ -354,10 +398,12 @@ class Instructions(Page):
             other_players=group_size - 1,
             num_rounds=session_num_rounds(player),
             point_value=player.session.config.get('real_world_currency_per_point', 1),
+            participation_fee=f"{Decimal(player.session.config['participation_fee']):.2f}",
+            elicit_belief=player.session.config.get('elicit_belief', False),
         )
 
 
-class Quiz(Page):
+class Quiz(ParticipantPage):
     form_model = 'player'
     form_fields = [
         'quiz_match_median',
@@ -398,10 +444,12 @@ class Quiz(Page):
             other_players=group_size - 1,
             num_rounds=session_num_rounds(player),
             point_value=player.session.config.get('real_world_currency_per_point', 1),
+            participation_fee=f"{Decimal(player.session.config['participation_fee']):.2f}",
+            elicit_belief=player.session.config.get('elicit_belief', False),
         )
 
 
-class Belief(Page):
+class Belief(ParticipantPage):
     form_model = 'player'
     form_fields = ['belief_median']
 
@@ -420,7 +468,7 @@ class Belief(Page):
         )
 
 
-class Choice(Page):
+class Choice(ParticipantPage):
     form_model = 'player'
     form_fields = ['x_choice']
 
@@ -445,6 +493,9 @@ class Choice(Page):
 
 
 class WaitForGroup(WaitPage):
+    title_text = "等待同组选择"
+    body_text = "你的选择已提交，请等待同组其他参与者。所有组员提交后将显示本轮结果。"
+
     @staticmethod
     def is_displayed(player: Player):
         return player.round_number <= session_num_rounds(player)
@@ -454,7 +505,7 @@ class WaitForGroup(WaitPage):
         set_payoffs(group)
 
 
-class Results(Page):
+class Results(ParticipantPage):
     @staticmethod
     def is_displayed(player: Player):
         return player.round_number <= session_num_rounds(player)
@@ -465,11 +516,11 @@ class Results(Page):
         num_rounds = session_num_rounds(player)
         return dict(
             x=player.x_choice,
-            cost=round(player.cost, 2),
+            cost=f"{Decimal(str(player.cost)):.3f}",
             median=int(median) if median == int(median) else round(median, 1),
             below_median=player.x_choice < median,
             penalty=int(player.penalty_paid),
-            round_payoff=round(player.round_payoff, 2),
+            round_payoff=f"{Decimal(str(player.round_payoff)):.3f}",
             E=C.ENDOWMENT,
             K=C.K,
             L=player.session.config.get('penalty', PENALTY_LOW),
@@ -479,7 +530,7 @@ class Results(Page):
         )
 
 
-class Survey(Page):
+class Survey(ParticipantPage):
     form_model = 'player'
     form_fields = [
         'survey_risk',
@@ -511,7 +562,7 @@ class Survey(Page):
         settle_payment(player)
 
 
-class Payment(Page):
+class Payment(ParticipantPage):
     @staticmethod
     def is_displayed(player: Player):
         return player.round_number == session_num_rounds(player)
