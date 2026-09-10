@@ -2,50 +2,192 @@
 
 面向已熟悉 oTree 的实验员。本项目使用中文界面，每场 **15 人、20 轮**，一个 Session 只运行一个 treatment。
 
-## 如何启动
+## 从下载 ZIP 到打开 admin
 
-本项目验证环境为 Python 3.9 / macOS，依赖固定为 oTree 5.11.5。以下命令假定已安装 Python 3.9。
+**首次使用要完成：下载解压 → 检查 Python → 创建虚拟环境 → 安装依赖 → 启动 → 打开后台。**
+不能跳过环境创建和依赖安装。选择下面与你电脑对应的一套步骤，每次只运行一条命令，成功后再继续。
+代码框中的内容才是命令，不要复制终端提示符（例如 `%`、`$`、`PS C:\...>`）。
 
-### 第一步：进入项目目录
+本项目固定使用 oTree 5.11.5，本地验证的 Python 为 3.9。以下首次安装过程需要网络。
 
-下载 ZIP 并完整解压，在终端进入含有 `settings.py` 和 `requirements.txt` 的文件夹。
-下面的命令都在这个目录运行，不是在 Python 的 `>>>` 窗口中运行。
+### 1. 下载和解压（两种系统相同）
 
-### 第二步：首次创建环境、安装依赖、启动
+1. 打开 [中国站 GitHub 仓库](https://github.com/Annawolf0128/Rat-Race_Site1_China)，选择 **main** 分支。
+2. 点击绿色 **Code → Download ZIP**，下载 `Rat-Race_Site1_China-main.zip`。
+3. **Mac**：双击 ZIP 解压。**Windows**：右键 ZIP → **全部解压**；不要直接在 ZIP 内运行。
+4. 将解压后的 `Rat-Race_Site1_China-main` 文件夹放到桌面。
+5. 打开文件夹，确认这一层直接包含 `settings.py`、`requirements.txt`、`README.md` 和 `scripts` 文件夹。
+   如果还套着一层同名文件夹，要使用里面这一层作为项目目录。
 
-**Mac：**先用 `python3 --version` 确认版本；若安装的 3.9 命令名是 `python3.9`，将第一行的 `python3` 换成 `python3.9`。
-按顺序逐条运行，上一条成功后再执行下一条：
+### 2A. Mac：准备环境并启动
+
+**① 打开终端。** 按 Command + 空格，搜索“终端”或 Terminal，打开它。
+
+**② 进入解压后的项目目录。** 如果文件夹按上一步放在桌面且名称未改，运行：
+
+```bash
+cd "$HOME/Desktop/Rat-Race_Site1_China-main"
+```
+
+如果保存位置或文件夹名不同：在终端输入 `cd `（末尾有空格），把 Finder 中的项目文件夹拖入终端，再按回车。
+`cd` 的作用是进入指定文件夹。
+
+确认目录内容：
+
+```bash
+ls
+```
+
+`ls` 只列出当前文件夹内容，不修改文件。应能看到 `settings.py`、`requirements.txt`、`rbc`、`scripts`。
+如果没有，先回到正确目录再继续。
+
+**③ 检查 Python。** 运行：
+
+```bash
+python3 --version
+```
+
+如果显示 **Python 3.9.x**（例如 `Python 3.9.6`），直接继续第④步。
+
+如果找不到命令，或者显示其他版本：先试 `python3.9 --version`。若它显示 3.9.x，第④步改用 `python3.9`。
+如果没有 Python 3.9，从 [Python 3.9.13 官方版本页](https://www.python.org/downloads/release/python-3913/) 的 Files
+下载 **macOS 64-bit universal2 installer**，打开安装包并完成安装。重新打开终端、重新进入项目目录，
+运行 `python3.9 --version` 确认成功，然后第④步使用 `python3.9`。
+
+**④ 创建项目虚拟环境。** 第③步 `python3` 为 3.9.x 时运行：
 
 ```bash
 python3 -m venv .venv
+```
+
+如果第③步使用的是 `python3.9`，则改为运行下面这一条；两条创建命令选一条即可：
+
+```bash
+python3.9 -m venv .venv
+```
+
+命令没有输出、重新出现终端提示符通常表示已完成。它会在项目中创建 `.venv` 文件夹。
+
+**⑤ 安装依赖。** 运行并等待结束：
+
+```bash
 .venv/bin/python -m pip install -r requirements.txt
+```
+
+第一次通常会看到 `Successfully installed ...`，重复安装可能显示 `Requirement already satisfied`。
+如果出现 `ERROR`，先处理错误，不继续启动。
+
+**⑥ 启动实验服务。** 运行：
+
+```bash
 .venv/bin/python scripts/start_study.py --port 8000
 ```
 
-**Windows PowerShell：**
+正常启动会显示 `Running prodserver` 以及服务启动日志。此时终端保持运行、不返回输入提示符是正常的。
+**保持这个终端窗口打开**，继续第 3 节打开网页。
+
+### 2B. Windows：准备环境并启动
+
+以下针对 Windows 10/11 的 Intel/AMD 64 位电脑。Windows ARM 需要单独确认运行环境。
+
+**① 打开 PowerShell。** 在开始菜单搜索 PowerShell 并打开。不要在 Python 的 `>>>` 窗口输入下列命令。
+
+**② 进入解压后的项目目录。** 如果文件夹在普通桌面目录，运行：
+
+```powershell
+cd "$HOME\Desktop\Rat-Race_Site1_China-main"
+```
+
+如果桌面由 OneDrive 管理或保存位置不同：在文件资源管理器打开项目文件夹，按 **Ctrl+L** 复制完整路径；
+在 PowerShell 输入 `cd "复制的实际路径"`，再回车。引号内替换为实际路径，不是照抄中文。
+
+确认目录内容：
+
+```powershell
+dir
+```
+
+应能看到 `settings.py`、`requirements.txt`、`rbc` 和 `scripts`。如果没有，先进入正确目录。
+
+**③ 检查 Python。** 运行：
+
+```powershell
+py -3.9 --version
+```
+
+显示 **Python 3.9.x** 后继续。如果提示找不到 `py` 或没有 Python 3.9，从
+[Python 3.9.13 官方版本页](https://www.python.org/downloads/release/python-3913/) 的 Files 下载 **Windows installer (64-bit)**。
+安装时勾选 **Add Python 3.9 to PATH**，保留 pip 和 Python Launcher，完成安装。
+随后新开 PowerShell、重新进入项目目录，再运行上面的版本检查。
+
+**④ 创建项目虚拟环境。** 运行：
 
 ```powershell
 py -3.9 -m venv .venv
+```
+
+**⑤ 安装依赖。** 等第④步成功，再运行：
+
+```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+看到安装成功或 `Requirement already satisfied` 后继续；出现 `ERROR` 时先处理错误。
+
+**⑥ 启动实验服务。** 运行：
+
+```powershell
 .\.venv\Scripts\python.exe scripts\start_study.py --port 8000
 ```
 
-第一行创建项目运行环境，第二行安装依赖，第三行启动。这里直接使用虚拟环境里的 Python，**不用另行激活，也不依赖系统是否有 `python` 命令**。
-前两行通常只需首次运行；以后进入同一项目目录，执行对应系统的第三行即可。不要复制其他电脑的 `.venv`。
-如果任何一行报错，先处理报错，不继续开场。服务启动后保持终端窗口打开。
+正常启动会显示 `Running prodserver` 以及服务启动日志。**保持窗口打开**，继续下面第 3 节。
+以上命令直接调用虚拟环境里的 Python，不需要运行激活脚本，也不需要修改 PowerShell 执行策略。
 
-### 第三步：打开网页
+### 3. 在实验员电脑打开 admin
 
-在**实验员电脑**的浏览器打开：
+在浏览器地址栏输入：
 
 **http://localhost:8000/sessions**
 
-无需设置或输入后台密码、密钥。进入后台后按下面的场次流程操作。
+看到 **Sessions** 页面，以及 **Rooms、Data** 等菜单，即已成功进入 admin。**无需设置或输入密码、密钥。**
 
-**被试电脑不能用 `localhost`**，应使用实验员电脑的局域网 IP 和各自座位入口，见“开场与页面流程”。
-后台不设登录保护，此启动方式用于受控实验室网络。实验结束后在服务窗口按 **Ctrl+C** 停止服务。
+如果页面打不开，先看启动服务的终端是否报错。不要关闭终端后再尝试打开网页。
 
-程序使用默认 SQLite，数据自动保存在项目目录的 `db.sqlite3`，无需另外安装数据库。
+### 4. 以后再次启动和停止
+
+首次安装成功后，下次只需打开终端、进入**同一个项目目录**，再运行对应系统的启动命令：
+
+Mac：
+
+```bash
+.venv/bin/python scripts/start_study.py --port 8000
+```
+
+Windows PowerShell：
+
+```powershell
+.\.venv\Scripts\python.exe scripts\start_study.py --port 8000
+```
+
+然后打开 **http://localhost:8000/sessions**。不需要每次重建 `.venv` 或重新安装依赖。
+实验结束并完成数据保存后，在服务终端按 **Ctrl+C** 停止服务。关闭浏览器不等于停止服务器。
+
+### 5. 常见启动错误
+
+| 报错或现象 | 处理 |
+|---|---|
+| `command not found: python` | 不使用单独的 `python` 命令。按上面步骤先创建 `.venv`，再使用完整的虚拟环境 Python 路径 |
+| `python3` / `py` 找不到，或没有 3.9 | 按对应系统第③步安装 Python，并新开终端检查 |
+| 找不到 `requirements.txt` / `scripts/start_study.py` | 当前目录不对，重新进入直接包含这些文件的项目目录 |
+| 找不到 `.venv/bin/python` 或 `.venv\Scripts\python.exe` | 第④步环境创建没有完成，或当前目录不对；不要复制其他电脑的 `.venv` |
+| 安装依赖出现网络、证书或下载错误 | 安装尚未成功，保留完整错误并处理网络/环境问题后重试，不继续启动 |
+| `Address already in use` / 端口被占用 | 已有服务使用 8000；确认后停止旧服务，或把启动命令改为 `--port 8023`，同时浏览器改开 `http://localhost:8023/sessions` |
+
+Python 3.9 已结束官方支持，此处版本用于复现现有实验环境；Windows 步骤仍需在现场机器验证。
+程序使用默认 SQLite，数据保存在项目目录的 `db.sqlite3`，无需另外安装数据库。
+启动方式不设后台登录保护，只用于受控实验室网络。
+
+**被试电脑不能使用 `localhost`**：它们应使用实验员电脑的局域网 IP 和各自座位链接，见“开场与页面流程”。
 实验参数在 `params.py`，场次配置在 `settings.py`；进行中的场次不要修改参数。
 
 ## Treatment 与规则
