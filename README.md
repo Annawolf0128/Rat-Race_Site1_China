@@ -49,33 +49,11 @@ python scripts/start_study.py --port 8000
 - 掉线后用原座位入口重进，保留原 Session；没有自动补位或缺失答案代填。永久退出的处理由研究负责人决定。
 - 换场前完成付款和导出，再在 Room 点击 **Close this room**，让电脑重新打开座位入口候场，创建下一场。关闭 Room 不删除旧 Session。
 
-## 付款
+## 报酬设定
 
 **总报酬 = ¥15 出场费 + 抽中轮收益 × ¥0.50/点。** 建场时全场统一随机抽取一个支付轮，结束时显示；20 轮不累加支付。
-
-- 按 **Payments 中包含出场费的总额**与被试付款页核对，精确到分，不重复加出场费。
-- 例：抽中轮全组选 10，每人收益 99.500 点，总报酬 **¥64.75**。
-- 15 名正式参与者报酬上限合计 ¥975；候补等其他补偿另按研究方案执行。
-
-## 导出与收尾
-
-每场完成后导出场次 CSV 和 **Page times**，按场次号保存。关键字段：
-
-| 内容 | CSV 列名（`r` 为 1–20） |
-|---|---|
-| 参与者 / 座位 | `participant.code` / `participant.label` |
-| 每轮选择 | `rbc.r.player.x_choice` |
-| 每轮成本 / 罚金 | `rbc.r.player.cost` / `rbc.r.player.penalty_paid` |
-| **每轮个人收益（点）** | **`rbc.r.player.round_payoff`** |
-| 组号 / 组内编号 | `rbc.r.group.id_in_subsession` / `rbc.r.player.id_in_group` |
-| 组中位数 / 个人预测 | `rbc.r.group.median_x` / `rbc.r.player.belief_median` |
-| 支付轮 / 最终支付点数 | `participant.paid_round` / `participant.payoff` |
-
-标准 `player.payoff` 只在最后一轮记入抽中轮金额，其余轮为 0；**逐轮收益分析使用 `round_payoff`**。
-未进行轮次的空选择、未结算收益初始值不代表已完成数据。核对固定分组应比较组员名单，而非跨轮数据库内部 `group_id`。
-
-当天结束先导出，再停服备份 `db.sqlite3`；如有同名 `-wal`、`-shm`、`-journal` 文件也保留。
-不要在已有数据上执行 `resetdb`。Page times 含内存缓冲，计划重启前先导出。
+参与者完成问卷后，后台 **Payments** 显示最终金额：**Payoff (bonus)** 为折算后的奖金，**Total** 为含出场费的人民币总额。
+数据使用 oTree 标准 **Data** 导出（CSV，可用 Excel 打开）；每轮收益字段为 `round_payoff`，标准 `payoff` 用于抽中轮付款记账。
 
 **已知运行问题：**等待场景曾出现 `database is locked` / HTTP 500 / 超时，尚未定位修复。
 正式实验前需在实际服务器和 15 台电脑完成全流程、同时提交及断线恢复演练；异常时保留日志和数据，不强制推进。
