@@ -14,6 +14,8 @@
 以前 PostgreSQL 中的场次不会自动搬入 SQLite；切换后看不到旧场次不代表旧数据被删除。
 
 安装前拿到修复后的完整项目，不只复制某个 `.py` 文件，不复制其他电脑的 `.venv`。
+从 GitHub 使用 Code → Download ZIP 下载后，先完整解压，将含 `settings.py` 的项目文件夹命名为 `otree_china`。
+Windows 放到 `C:\otree_china`，Mac 放到个人主目录 `~/otree_china`，即可直接使用下文示例命令；不要在压缩包内部运行。
 正式运行和演练分别用两个项目目录，各自创建虚拟环境和数据库，
 例如 `otree_china` 与 `otree_china_test`；正式目录从不含测试 `db.sqlite3` 的代码包开始，不用 resetdb 清理已有数据。
 
