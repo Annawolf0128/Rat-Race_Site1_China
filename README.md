@@ -8,10 +8,9 @@
 
 ## 一、先看这里：实验员电脑安装与启动（Windows / Mac）
 
-**当前按实验安排恢复 oTree 默认 SQLite。实验员电脑安装 Python 和项目依赖即可，不需要安装 PostgreSQL、配置数据库账号或启动数据库服务。15 台被试电脑只需要浏览器。**
+**实验员电脑安装 Python 和项目依赖，按下文配置并启动实验程序。15 台被试电脑只需要浏览器。**
 
-数据自动保存到项目目录的 `db.sqlite3`。启动脚本忽略外部 `DATABASE_URL`，使用这个默认数据库，同时保留后台登录保护。
-以前 PostgreSQL 中的场次不会自动搬入 SQLite；切换后看不到旧场次不代表旧数据被删除。
+程序使用 oTree 默认 SQLite，数据自动保存到项目目录的 `db.sqlite3`，无需单独安装数据库。后台登录密码在启动文件中设置。
 
 安装前拿到修复后的完整项目，不只复制某个 `.py` 文件，不复制其他电脑的 `.venv`。
 从 GitHub 使用 Code → Download ZIP 下载后，先完整解压，将含 `settings.py` 的项目文件夹命名为 `otree_china`。
@@ -86,7 +85,6 @@ chmod 700 ~/start-china.command
 ```
 
 以后可从终端运行或双击 `.command` 文件，保持窗口打开。文件含密码，不上传 GitHub。
-无需安装 Homebrew 或 PostgreSQL。
 
 **版本与验收范围：**现有程序使用 Python 3.9 / oTree 5.11.5；Python 3.9 已结束官方支持，旧安装器仅用于复现项目环境，
 不是长期公网部署建议。升级运行环境需单独验收。Windows 安装步骤未在实际 Windows 电脑执行验证。
@@ -111,9 +109,8 @@ chmod 700 ~/start-china.command
   如存在 `db.sqlite3-wal`、`db.sqlite3-shm` 或 `db.sqlite3-journal`，也保留这些同名前缀文件；异常关机后不要自行删它们。
 - [ ] 不在服务仍运行时仅复制主数据库文件来当作完整备份。恢复演练使用另一份项目目录，不覆盖正式库。
 
-**当前测试边界：**2026-09-10 复查六场 20 轮与 1,800 次选择通过，但欢迎页长停留测试再次锁库、HTTP 500 和超时。此前 SQLite 测试也出现过 `database is locked` / HTTP 500，恢复默认不等于修复了这些问题。
-历史 25 场完整验收使用 PostgreSQL，不能直接当作当前 SQLite 的稳定性证明。现场必须复验；报错时保留场次、日志和数据库，
-不要强行推进或 resetdb。付款精度、滑块和固定分组等代码修复继续保留。
+**正式实验前检查：**请在实验员电脑和 15 台被试电脑上完成现场演练。当前版本曾在等待场景出现
+`database is locked`、HTTP 500 和超时，尚未解决；遇到异常时保留场次、日志和数据库，不强行推进或 resetdb。
 
 ---
 
@@ -153,8 +150,7 @@ chmod 700 ~/start-china.command
 ## 四、服务器配置与数据保存
 
 按第一节配置 Python、项目依赖、`OTREE_ADMIN_PASSWORD` 和 `OTREE_SECRET_KEY`，运行 `scripts/start_study.py`。
-默认 SQLite 数据库位于项目目录的 `db.sqlite3`；无需单独安装数据库。启动脚本清除继承的 `DATABASE_URL`，
-启用正式模式及后台登录保护。已有外部数据库保持原样，不自动迁移。
+数据保存在项目目录的 `db.sqlite3`。启动脚本启用正式模式及后台登录保护。
 
 有效选择提交成功后由服务器保存；同组全部提交后，计算并保存每人的成本、罚金和 `round_payoff`。
 20 轮分别留记录；分析各轮收益使用 `rbc.<轮次>.player.round_payoff`，标准 `payoff` 用于最终抽中轮付款。

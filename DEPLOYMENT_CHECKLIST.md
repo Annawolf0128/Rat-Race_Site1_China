@@ -1,8 +1,8 @@
 # 正式实验启动与现场验收
 
-当前恢复 oTree 默认 SQLite，安装与 Windows / Mac 启动模板见 README 第一节。
+程序使用 oTree 默认 SQLite，安装与 Windows / Mac 启动模板见 README 第一节。
 程序和本地验收不能代替实际服务器、15 台电脑的现场检查。
-历史完整验收使用 PostgreSQL；SQLite 先前复现过锁库，恢复默认并未解决该已知问题。
+当前版本在等待场景出现过数据库锁定；该问题尚未解决，必须完成现场复验。
 
 ## 启动
 
@@ -12,8 +12,8 @@
 python scripts/start_study.py --port 8000
 ```
 
-启动脚本使用默认 `db.sqlite3`，忽略继承的 `DATABASE_URL`，启用正式模式和 STUDY 后台保护。
-不需要 PostgreSQL 或数据库密码。使用原数据库正常重启，不 resetdb；切换数据库不迁移旧场次。
+启动脚本使用默认 `db.sqlite3`，启用正式模式和 STUDY 后台保护。
+正常重启继续使用原数据库，不执行 resetdb。
 后台使用 Rooms / Sessions，被试使用 01–15 座位入口。只有全部到 Welcome 时才能统一开始。
 
 ## 现场必须逐项确认（以下需要真实实验环境，不能用本地测试自动勾选）
