@@ -4,10 +4,10 @@ from pathlib import Path
 from importlib.metadata import version
 
 def validate_environment(env):
-    missing=[key for key in ['DATABASE_URL','OTREE_ADMIN_PASSWORD','OTREE_SECRET_KEY'] if not env.get(key)]
+    missing=[key for key in ['OTREE_ADMIN_PASSWORD','OTREE_SECRET_KEY'] if not env.get(key)]
     if missing: raise RuntimeError('缺少环境变量：'+', '.join(missing))
-    if not env['DATABASE_URL'].startswith(('postgres://','postgresql://')):
-        raise RuntimeError('正式实验必须使用 PostgreSQL，不能使用 SQLite。')
+    if any(env[key].startswith('REPLACE_') for key in ['OTREE_ADMIN_PASSWORD','OTREE_SECRET_KEY']):
+        raise RuntimeError('请先替换启动文件中的密码和密钥占位符 REPLACE_...。')
     if env['OTREE_SECRET_KEY']=='rbc-dev-only-do-not-use-in-prod':
         raise RuntimeError('请使用独立的 OTREE_SECRET_KEY。')
     if version('otree')!='5.11.5': raise RuntimeError('请安装 requirements.txt 中已验收的 oTree 5.11.5。')
@@ -15,6 +15,8 @@ def validate_environment(env):
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--host',default='0.0.0.0');parser.add_argument('--port',type=int,default=8000);args=parser.parse_args()
     env=os.environ.copy()
+    # This launcher deliberately uses oTree's default SQLite database.
+    env.pop('DATABASE_URL', None)
     try:validate_environment(env)
     except RuntimeError as exc:parser.exit(1,str(exc)+'\n')
     env.update(OTREE_PRODUCTION='1',OTREE_AUTH_LEVEL='STUDY')

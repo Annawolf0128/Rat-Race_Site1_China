@@ -16,3 +16,16 @@ db.sqlite3-wal
 db.sqlite3-shm
 
 .venv/
+
+# Local QA tools and evidence are not part of the experiment distribution.
+_static/grid.html
+tests/
+ACCEPTANCE_REPORT.md
+PAYMENT_FIX_NOTES.md
+SQLITE_RECHECK.md
+FINAL_DATA_AUDIT.md
+# Machine-specific credentials and startup files.
+.env
+.env.*
+start-china.cmd
+start-china.command

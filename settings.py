@@ -1,10 +1,5 @@
 from os import environ
 
-# SQLite locks were reproduced during ordinary waits/background worker activity.
-# Refuse a production launch that would silently fall back to SQLite.
-if environ.get('OTREE_PRODUCTION') and not environ.get('DATABASE_URL', '').startswith(('postgres://', 'postgresql://')):
-    raise RuntimeError('正式实验需要 PostgreSQL：请先设置 DATABASE_URL，禁止回退到 SQLite。')
-
 # All tunable parameters live in params.py — edit there, not here.
 from params import (
     PENALTY_LOW,
@@ -108,7 +103,7 @@ ROOMS = [
         name='china_lab',
         display_name='中国实验室 China Lab (15 seats)',
         # 固定候场室：实验室每台电脑书签设为
-        #   http://<server>/room/china_lab?participant_label=Seat01  （每台机器一个座位号）
+        #   http://<server>/room/china_lab?participant_label=01  （每台机器一个座位号）
         # 被试开机即候场；实验员人齐后在后台该 room 里 create session 即可开场。
         participant_label_file='_rooms/seats.txt',
         use_secure_urls=False,

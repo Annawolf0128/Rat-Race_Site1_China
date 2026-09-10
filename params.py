@@ -2,7 +2,7 @@
 Central parameter file for the Reversed Beauty Contest experiment.
 
 EDIT VALUES HERE — settings.py and rbc/__init__.py both import from this file.
-Restart `otree devserver` after editing for changes to take effect.
+Restart the server after editing for changes to take effect; do not edit during a session.
 """
 
 # ============================================================
