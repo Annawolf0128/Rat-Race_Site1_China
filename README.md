@@ -2,26 +2,37 @@
 
 面向已熟悉 oTree 的实验员。本项目使用中文界面，每场 **15 人、20 轮**，一个 Session 只运行一个 treatment。
 
-## 如何启动：两条命令，然后打开网页
+## 如何启动
 
-**前提：实验员电脑已安装兼容的 Python，并准备好项目虚拟环境。** 本项目验证环境为 Python 3.9 / macOS，依赖固定为 oTree 5.11.5。
+本项目验证环境为 Python 3.9 / macOS，依赖固定为 oTree 5.11.5。以下命令假定已安装 Python 3.9。
 
 ### 第一步：进入项目目录
 
-下载 GitHub ZIP 并完整解压。在终端进入含有 `settings.py` 和 `requirements.txt` 的文件夹，激活该项目的虚拟环境。
+下载 ZIP 并完整解压，在终端进入含有 `settings.py` 和 `requirements.txt` 的文件夹。
 下面的命令都在这个目录运行，不是在 Python 的 `>>>` 窗口中运行。
 
-### 第二步：依次运行这两条命令
+### 第二步：首次创建环境、安装依赖、启动
 
-首次使用先安装依赖，等安装成功后再运行启动命令：
+**Mac：**先用 `python3 --version` 确认版本；若安装的 3.9 命令名是 `python3.9`，将第一行的 `python3` 换成 `python3.9`。
+按顺序逐条运行，上一条成功后再执行下一条：
 
 ```bash
-python -m pip install -r requirements.txt
-python scripts/start_study.py --port 8000
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python scripts/start_study.py --port 8000
 ```
 
-**第一行是安装，第二行是启动。** 第一行通常只需首次安装时运行；以后直接运行第二行即可。
-如果安装或启动报错，先处理报错，不继续开场。服务启动后保持终端窗口打开。
+**Windows PowerShell：**
+
+```powershell
+py -3.9 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe scripts\start_study.py --port 8000
+```
+
+第一行创建项目运行环境，第二行安装依赖，第三行启动。这里直接使用虚拟环境里的 Python，**不用另行激活，也不依赖系统是否有 `python` 命令**。
+前两行通常只需首次运行；以后进入同一项目目录，执行对应系统的第三行即可。不要复制其他电脑的 `.venv`。
+如果任何一行报错，先处理报错，不继续开场。服务启动后保持终端窗口打开。
 
 ### 第三步：打开网页
 
