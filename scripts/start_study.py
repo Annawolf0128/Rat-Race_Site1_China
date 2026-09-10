@@ -4,12 +4,6 @@ from pathlib import Path
 from importlib.metadata import version
 
 def validate_environment(env):
-    missing=[key for key in ['OTREE_ADMIN_PASSWORD','OTREE_SECRET_KEY'] if not env.get(key)]
-    if missing: raise RuntimeError('缺少环境变量：'+', '.join(missing))
-    if any(env[key].startswith('REPLACE_') for key in ['OTREE_ADMIN_PASSWORD','OTREE_SECRET_KEY']):
-        raise RuntimeError('请先替换启动文件中的密码和密钥占位符 REPLACE_...。')
-    if env['OTREE_SECRET_KEY']=='rbc-dev-only-do-not-use-in-prod':
-        raise RuntimeError('请使用独立的 OTREE_SECRET_KEY。')
     if version('otree')!='5.11.5': raise RuntimeError('请安装 requirements.txt 中已验收的 oTree 5.11.5。')
 
 def main():
@@ -19,7 +13,9 @@ def main():
     env.pop('DATABASE_URL', None)
     try:validate_environment(env)
     except RuntimeError as exc:parser.exit(1,str(exc)+'\n')
-    env.update(OTREE_PRODUCTION='1',OTREE_AUTH_LEVEL='STUDY')
+    # Local lab mode: open administrator pages without a login.
+    env.pop('OTREE_AUTH_LEVEL', None)
+    env['OTREE_PRODUCTION']='1'
     executable=str(Path(sys.executable).with_name('otree.exe' if os.name=='nt' else 'otree'))
     # Ensure oTree's own child process uses the same virtual environment.
     env['PATH']=str(Path(sys.executable).parent)+os.pathsep+env.get('PATH','')

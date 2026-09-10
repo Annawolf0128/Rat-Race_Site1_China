@@ -6,14 +6,14 @@
 
 - oTree **5.11.5**，依赖见 `requirements.txt`；本地验证环境为 Python 3.9 / macOS，实验室系统需现场演练。
 - 默认 SQLite，数据文件为项目目录的 `db.sqlite3`。实验参数集中在 `params.py`，场次配置在 `settings.py`；进行中的场次不要修改参数。
-- 设置 `OTREE_ADMIN_PASSWORD` 和固定的 `OTREE_SECRET_KEY` 后，在项目虚拟环境运行：
+- 安装 `requirements.txt` 的依赖后，在项目虚拟环境直接运行，无需配置后台密码或密钥：
 
 ```text
 python scripts/start_study.py --port 8000
 ```
 
-脚本监听 `0.0.0.0:8000`，启用正式模式和 STUDY 后台登录保护，使用默认数据库（忽略环境中的 `DATABASE_URL`）。
-后台用户名为 `admin`，密码为上述环境变量值；正常退出时同时停止后台 worker。
+脚本监听 `0.0.0.0:8000`，使用默认数据库并关闭 Debug；打开 `http://<服务器IP>:8000/sessions` 直接进入后台，无需登录。
+该启动方式清除 `OTREE_AUTH_LEVEL` 和 `DATABASE_URL`，正常退出时同时停止后台 worker。后台不设访问密码，只用于受控实验室网络。
 
 ## Treatment 与规则
 
